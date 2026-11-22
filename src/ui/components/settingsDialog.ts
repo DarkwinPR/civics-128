@@ -10,6 +10,7 @@ import type {
 import {
   findJurisdiction,
   GOVERNORS_VERIFIED_ON,
+  governorsMayHaveChanged,
   JURISDICTIONS,
   noSenatorsAnswer,
 } from '../../domain/states';
@@ -21,6 +22,7 @@ import {
   speakText,
   stopSpeaking,
 } from '../../services/speech';
+import { exportBackup, parseBackup } from '../../services/storage';
 import { applyThemePreference, getStoredTheme, getSystemTheme } from '../../services/theme';
 import { announce } from '../announcer';
 import { t } from '../../i18n';
@@ -30,6 +32,8 @@ export interface SettingsDialogHandlers {
   getState: () => PersistedState;
   onUpdateSettings: (patch: Partial<StudySettings>) => void;
   onResetProgress: () => void;
+  /** Replace all saved data with a backup the user picked. */
+  onImportBackup: (state: PersistedState) => void;
 }
 
 export function renderSettingsDialogBody(
@@ -222,6 +226,11 @@ export function renderSettingsDialogBody(
           '<a href="https://www.uscis.gov/citizenship/testupdates" target="_blank" rel="noopener noreferrer">uscis.gov/citizenship/testupdates</a>',
         )}
       </p>
+      ${
+        governorsMayHaveChanged()
+          ? `<p class="notice notice--gold" style="margin:0;">${escapeHtml(t('settings.governorsRecheck'))}</p>`
+          : ''
+      }
       <div class="officials-grid">
         ${federalKeys.map(renderOfficialField).join('')}
       </div>
@@ -277,6 +286,15 @@ export function renderSettingsDialogBody(
         <button type="button" id="reset-progress-btn" class="btn btn--soft-danger">
           ${escapeHtml(t('settings.resetProgress'))}
         </button>
+      </div>
+      <div class="backup-box">
+        <p class="field-hint" style="margin:0;">${escapeHtml(t('settings.backupHint'))}</p>
+        <div style="display:flex;flex-wrap:wrap;gap:0.6rem;">
+          <button type="button" id="export-backup-btn" class="btn btn--secondary">${escapeHtml(t('settings.backupExport'))}</button>
+          <button type="button" id="import-backup-btn" class="btn btn--ghost">${escapeHtml(t('settings.backupImport'))}</button>
+          <input id="import-backup-file" type="file" accept="application/json,.json" hidden />
+        </div>
+        <p id="backup-status" class="field-hint" role="status" style="margin:0;"></p>
       </div>
     </section>
   `;
@@ -485,6 +503,48 @@ export function renderSettingsDialogBody(
       }
       announce(t('settings.announceRestored'));
     });
+
+  // Backup: download a file / restore from a file (stays on the device)
+  const backupStatus = container.querySelector<HTMLElement>('#backup-status');
+  container.querySelector<HTMLButtonElement>('#export-backup-btn')?.addEventListener('click', () => {
+    const blob = new Blob([exportBackup(handlers.getState())], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `civics-128-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    if (backupStatus) backupStatus.textContent = t('settings.backupExported');
+    announce(t('settings.backupExported'));
+  });
+  const fileInput = container.querySelector<HTMLInputElement>('#import-backup-file');
+  container.querySelector<HTMLButtonElement>('#import-backup-btn')?.addEventListener('click', () => {
+    fileInput?.click();
+  });
+  fileInput?.addEventListener('change', async () => {
+    const file = fileInput.files?.[0];
+    fileInput.value = '';
+    if (!file) return;
+    let next: PersistedState;
+    try {
+      next = parseBackup(await file.text());
+    } catch {
+      if (backupStatus) backupStatus.textContent = t('settings.backupInvalid');
+      announce(t('settings.backupInvalid'), 'assertive');
+      return;
+    }
+    const confirmed = await openConfirmDialog(confirmDialog, {
+      title: t('settings.backupConfirmTitle'),
+      message: t('settings.backupConfirmMessage'),
+      confirmLabel: t('settings.backupConfirm'),
+    });
+    if (!confirmed) return;
+    handlers.onImportBackup(next);
+    announce(t('settings.backupImported'));
+    void closeDialogSmoothly(dialog);
+  });
 
   // Reset study progress
   container

@@ -1,5 +1,7 @@
 import { DEFAULT_OFFICIALS } from '../domain/questions';
 import type {
+  EnglishProgress,
+  EnglishSentenceProgress,
   ExamRecord,
   MasteryStatus,
   OfficialOverrides,
@@ -34,53 +36,83 @@ function defaultState(): PersistedState {
   };
 }
 
+const asRecord = (value: unknown): Record<string, EnglishSentenceProgress> =>
+  value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, EnglishSentenceProgress>)
+    : {};
+
+function sanitizeEnglish(value: unknown): EnglishProgress {
+  const raw = (value && typeof value === 'object' ? value : {}) as Partial<EnglishProgress>;
+  return {
+    reading: asRecord(raw.reading),
+    writing: asRecord(raw.writing),
+    interview: asRecord(raw.interview),
+  };
+}
+
+export function getEnglishProgress(state: PersistedState): EnglishProgress {
+  return state.english ?? { reading: {}, writing: {}, interview: {} };
+}
+
+/** Parse a stored or exported state object, filling defaults for anything missing. */
+export function parseState(raw: string): PersistedState {
+  return fromParsed(JSON.parse(raw) as Partial<PersistedState>);
+}
+
 export function loadState(): PersistedState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState();
-    const parsed = JSON.parse(raw) as Partial<PersistedState>;
-    return {
-      progress: parsed.progress ?? {},
-      examHistory: Array.isArray(parsed.examHistory) ? parsed.examHistory : [],
-      settings: {
-        speechRate:
-          typeof parsed.settings?.speechRate === 'number'
-            ? parsed.settings.speechRate
-            : DEFAULT_SETTINGS.speechRate,
-        voiceURI:
-          typeof parsed.settings?.voiceURI === 'string'
-            ? parsed.settings.voiceURI
-            : DEFAULT_SETTINGS.voiceURI,
-        autoSpeak:
-          typeof parsed.settings?.autoSpeak === 'boolean'
-            ? parsed.settings.autoSpeak
-            : DEFAULT_SETTINGS.autoSpeak,
-        officials: {
-          ...DEFAULT_OFFICIALS,
-          ...(parsed.settings?.officials ?? {}),
-        },
-        homeState:
-          typeof parsed.settings?.homeState === 'string' ? parsed.settings.homeState : '',
-        homeDistrict:
-          typeof parsed.settings?.homeDistrict === 'string' ? parsed.settings.homeDistrict : '',
-        testVersion: parsed.settings?.testVersion === '2008' ? '2008' : '2025',
-        dailyGoal:
-          typeof parsed.settings?.dailyGoal === 'number' && parsed.settings.dailyGoal > 0
-            ? parsed.settings.dailyGoal
-            : DEFAULT_SETTINGS.dailyGoal,
-        fontScale:
-          typeof parsed.settings?.fontScale === 'number' &&
-          parsed.settings.fontScale >= 0.9 &&
-          parsed.settings.fontScale <= 1.5
-            ? parsed.settings.fontScale
-            : DEFAULT_SETTINGS.fontScale,
-      },
-      activity:
-        parsed.activity && typeof parsed.activity === 'object' ? parsed.activity : {},
-    };
+    return parseState(raw);
   } catch {
     return defaultState();
   }
+}
+
+function fromParsed(parsed: Partial<PersistedState>): PersistedState {
+  return {
+    progress:
+      parsed.progress && typeof parsed.progress === 'object' && !Array.isArray(parsed.progress)
+        ? parsed.progress
+        : {},
+    examHistory: Array.isArray(parsed.examHistory) ? parsed.examHistory : [],
+    settings: {
+      speechRate:
+        typeof parsed.settings?.speechRate === 'number'
+          ? parsed.settings.speechRate
+          : DEFAULT_SETTINGS.speechRate,
+      voiceURI:
+        typeof parsed.settings?.voiceURI === 'string'
+          ? parsed.settings.voiceURI
+          : DEFAULT_SETTINGS.voiceURI,
+      autoSpeak:
+        typeof parsed.settings?.autoSpeak === 'boolean'
+          ? parsed.settings.autoSpeak
+          : DEFAULT_SETTINGS.autoSpeak,
+      officials: {
+        ...DEFAULT_OFFICIALS,
+        ...(parsed.settings?.officials ?? {}),
+      },
+      homeState:
+        typeof parsed.settings?.homeState === 'string' ? parsed.settings.homeState : '',
+      homeDistrict:
+        typeof parsed.settings?.homeDistrict === 'string' ? parsed.settings.homeDistrict : '',
+      testVersion: parsed.settings?.testVersion === '2008' ? '2008' : '2025',
+      dailyGoal:
+        typeof parsed.settings?.dailyGoal === 'number' && parsed.settings.dailyGoal > 0
+          ? parsed.settings.dailyGoal
+          : DEFAULT_SETTINGS.dailyGoal,
+      fontScale:
+        typeof parsed.settings?.fontScale === 'number' &&
+        parsed.settings.fontScale >= 0.9 &&
+        parsed.settings.fontScale <= 1.5
+          ? parsed.settings.fontScale
+          : DEFAULT_SETTINGS.fontScale,
+    },
+    activity:
+      parsed.activity && typeof parsed.activity === 'object' ? parsed.activity : {},
+    english: sanitizeEnglish(parsed.english),
+  };
 }
 
 export function saveState(state: PersistedState): void {
@@ -251,7 +283,72 @@ export function resetProgressOnly(state: PersistedState): PersistedState {
     examHistory: [],
     settings: state.settings,
     activity: {},
+    english: { reading: {}, writing: {}, interview: {} },
   };
   saveState(next);
   return next;
+}
+
+// ---------------------------------------------------------------------------
+// English test practice
+// ---------------------------------------------------------------------------
+
+export type EnglishPart = keyof EnglishProgress;
+
+/** Record one reading, writing or interview attempt; counts toward the daily goal. */
+export function recordEnglishAttempt(
+  state: PersistedState,
+  part: EnglishPart,
+  id: string,
+  passed: boolean,
+): PersistedState {
+  const english = getEnglishProgress(state);
+  const existing = english[part][id] ?? { attempts: 0, passes: 0 };
+  const next: PersistedState = {
+    ...state,
+    english: {
+      ...english,
+      [part]: {
+        ...english[part],
+        [id]: {
+          attempts: existing.attempts + 1,
+          passes: existing.passes + (passed ? 1 : 0),
+          lastPracticedAt: new Date().toISOString(),
+        },
+      },
+    },
+    activity: bumpActivity(state.activity),
+  };
+  saveState(next);
+  return next;
+}
+
+/** Number of sentences in a part that were done right at least once. */
+export function countEnglishMastered(state: PersistedState, part: EnglishPart): number {
+  return Object.values(getEnglishProgress(state)[part]).filter((p) => p.passes > 0).length;
+}
+
+// ---------------------------------------------------------------------------
+// Backup (export / import) — the file stays on the user's device
+// ---------------------------------------------------------------------------
+
+const BACKUP_APP = 'civics-128';
+
+export function exportBackup(state: PersistedState, now = new Date()): string {
+  return JSON.stringify({ app: BACKUP_APP, version: 1, exportedAt: now.toISOString(), state }, null, 2);
+}
+
+/** Read a backup file's text without saving it. Throws if it is not a Civics 128 backup. */
+export function parseBackup(text: string): PersistedState {
+  const data = JSON.parse(text) as { app?: string; state?: Partial<PersistedState> };
+  if (data?.app !== BACKUP_APP || !data.state || typeof data.state !== 'object') {
+    throw new Error('not-a-backup');
+  }
+  return fromParsed(data.state);
+}
+
+/** Replace the saved state with a parsed backup. */
+export function restoreBackup(state: PersistedState): PersistedState {
+  saveState(state);
+  return state;
 }

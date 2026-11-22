@@ -86,6 +86,18 @@ const strings: StringModule = {
       'All study progress is stored locally in your browser. Nothing is sent to a server.',
     'settings.resetProgress': 'Reset Study Progress',
     'settings.announceReset': 'Study progress has been reset.',
+    'settings.backupHint':
+      'Changing phones or browsers? Save a backup file with your progress and open it on the other device. The file stays with you.',
+    'settings.backupExport': 'Save backup file',
+    'settings.backupImport': 'Restore from file',
+    'settings.backupExported': 'Backup file saved. Keep it somewhere safe.',
+    'settings.backupInvalid': 'That file is not a Civics 128 backup.',
+    'settings.backupConfirmTitle': 'Restore this backup?',
+    'settings.backupConfirmMessage': 'Your current progress on this device will be replaced by the progress in the file.',
+    'settings.backupConfirm': 'Restore',
+    'settings.backupImported': 'Your progress was restored.',
+    'settings.governorsRecheck':
+      'New governors took office in January 2027 in many states. Please confirm your governor’s name on your state’s official website.',
   },
   es: {
     'settings.yourTest': 'Tu examen',
@@ -165,6 +177,18 @@ const strings: StringModule = {
       'Todo tu progreso se guarda solo en este navegador. No se envía nada a ningún servidor.',
     'settings.resetProgress': 'Borrar progreso de estudio',
     'settings.announceReset': 'Se borró tu progreso de estudio.',
+    'settings.backupHint':
+      '¿Vas a cambiar de celular o de navegador? Guarda un archivo de respaldo con tu progreso y ábrelo en el otro dispositivo. El archivo se queda contigo.',
+    'settings.backupExport': 'Guardar respaldo',
+    'settings.backupImport': 'Restaurar desde archivo',
+    'settings.backupExported': 'Respaldo guardado. Guárdalo en un lugar seguro.',
+    'settings.backupInvalid': 'Ese archivo no es un respaldo de Civics 128.',
+    'settings.backupConfirmTitle': '¿Restaurar este respaldo?',
+    'settings.backupConfirmMessage': 'Tu progreso actual en este dispositivo se reemplazará por el del archivo.',
+    'settings.backupConfirm': 'Restaurar',
+    'settings.backupImported': 'Tu progreso fue restaurado.',
+    'settings.governorsRecheck':
+      'En enero de 2027 asumieron nuevos gobernadores en muchos estados. Confirma el nombre de tu gobernador en el sitio oficial de tu estado.',
   },
 };
 

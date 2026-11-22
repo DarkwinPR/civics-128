@@ -87,12 +87,28 @@ export interface StudySettings {
   fontScale: number;
 }
 
+/** Per-sentence practice record for the English test (keyed by sentence id). */
+export interface EnglishSentenceProgress {
+  attempts: number;
+  passes: number;
+  lastPracticedAt?: string;
+}
+
+export interface EnglishProgress {
+  reading: Record<string, EnglishSentenceProgress>;
+  writing: Record<string, EnglishSentenceProgress>;
+  /** N-400 interview questions answered out loud, keyed by item id. */
+  interview: Record<string, EnglishSentenceProgress>;
+}
+
 export interface PersistedState {
   progress: Record<number, QuestionProgress>;
   examHistory: ExamRecord[];
   settings: StudySettings;
   /** Practice count per local day, keyed YYYY-MM-DD. */
   activity: Record<string, number>;
+  /** English test practice (optional for data saved by older versions). */
+  english?: EnglishProgress;
 }
 
 export type AppView = 'dashboard' | 'flashcards' | 'exam' | 'oral' | 'english' | 'bank';

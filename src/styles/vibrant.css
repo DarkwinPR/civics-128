@@ -1019,6 +1019,250 @@ dialog.modal-dialog {
   text-decoration: underline wavy;
 }
 
+button.word-mark {
+  appearance: none;
+  border: none;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+button.word-mark svg {
+  inline-size: 0.9em;
+  block-size: 0.9em;
+}
+
+.word-mark.is-close {
+  background-color: var(--gold-soft);
+  color: var(--text-primary);
+  text-decoration: underline dotted;
+}
+
+.word-legend {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+}
+
+.word-legend .word-mark {
+  font-weight: 600;
+}
+
+/* Warm welcome card */
+.english-welcome {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-block-end: 1.15rem;
+  padding: 1rem 1.15rem;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--success-soft), var(--gold-soft));
+  border: 1px solid var(--border);
+}
+
+.english-welcome h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.15rem;
+}
+
+.english-welcome p {
+  margin: 0 0 0.75rem;
+  line-height: 1.5;
+}
+
+.english-welcome-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+/* Feedback after each attempt */
+.english-feedback {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  animation: english-pop 0.35s ease-out;
+}
+
+.english-feedback.is-pass {
+  background-color: var(--success-soft);
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+}
+
+.english-feedback.is-retry {
+  background-color: var(--gold-soft);
+  border-color: color-mix(in srgb, var(--gold) 35%, transparent);
+}
+
+.english-feedback-title {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.english-heard {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+}
+
+@keyframes english-pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .english-feedback {
+    animation: none;
+  }
+}
+
+/* Badges on the card */
+.english-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background-color: var(--brand-soft);
+  color: var(--brand);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.english-status svg {
+  inline-size: 0.9em;
+  block-size: 0.9em;
+}
+
+.english-status--done {
+  background-color: var(--success-soft);
+  color: var(--success);
+}
+
+.english-streak {
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background-color: var(--gold-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+/* Writing hint */
+.english-hint {
+  margin: 0;
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.english-hint-words {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+}
+
+/* Progress card */
+.english-progress {
+  margin-block-start: 1.15rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.english-progress-title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.english-progress-row {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.english-progress-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.english-progress-count {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.english-session-note {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Helpful phrases */
+.english-phrases {
+  margin-block-start: 1rem;
+}
+
+.english-phrases summary {
+  cursor: pointer;
+}
+
+.english-phrase-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.english-phrase-list li {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.english-phrase {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  text-align: start;
+  border: 1px solid var(--border);
+  background-color: var(--bg-subtle);
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  padding: 0.45rem 0.75rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.english-phrase:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.english-phrase-es {
+  padding-inline-start: 0.8rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
 .vocab-group + .vocab-group {
   margin-block-start: 1rem;
 }
@@ -1186,4 +1430,14 @@ dialog.modal-dialog {
   .nav-btn:hover {
     transform: none;
   }
+}
+
+/* ---------- Backup ---------- */
+.backup-box {
+  display: grid;
+  gap: 0.6rem;
+  margin-block-start: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-subtle);
 }
