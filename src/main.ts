@@ -198,7 +198,11 @@ function focusViewHeading(): void {
 
 function renderCurrentView(withTransition = false): void {
   const docWithVT = document as Document & {
-    startViewTransition?: (update: () => void) => { finished: Promise<void> };
+    startViewTransition?: (update: () => void) => {
+      finished: Promise<void>;
+      ready: Promise<void>;
+      updateCallbackDone: Promise<void>;
+    };
   };
 
   if (!withTransition || typeof docWithVT.startViewTransition !== 'function') {
@@ -211,10 +215,16 @@ function renderCurrentView(withTransition = false): void {
     mountActiveView();
   });
 
+  // A quick second tap skips the running animation; that is expected, not an error.
+  transition.ready.catch(() => undefined);
+  transition.updateCallbackDone.catch(() => undefined);
+
   // Mandatory accessibility routing after same-document view transitions.
-  void transition.finished.finally(() => {
-    focusViewHeading();
-  });
+  transition.finished
+    .catch(() => undefined)
+    .finally(() => {
+      focusViewHeading();
+    });
 }
 
 function navigateTo(view: AppView): void {
