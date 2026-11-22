@@ -27,6 +27,11 @@ celular, se puede instalar como app y funciona sin internet. Interfaz en **espa√
 - **English test**: reading aloud with speech recognition and word-by-word feedback, dictation
   with hints and word-by-word audio, official vocabulary, **N-400 interview questions** you can
   answer by voice, helpful phrases for the officer, encouraging feedback and saved progress.
+- **English mock interview**: N-400 questions, then reading and writing with the official
+  3-try rules, and a friendly results screen.
+- **Hardest questions**: the dashboard lists the questions you miss most, with one tap to drill them.
+- **Forgiving answers**: accents and small spelling slips on long words are accepted
+  ("constituci√≥n", "Jeferson").
 - **Your state, auto-filled**: pick your state and district to get your current senators,
   representative, governor and capital.
 - **"Ver en espa√±ol"** translation helper for every question (answers stay in English).
@@ -40,6 +45,7 @@ celular, se puede instalar como app y funciona sin internet. Interfaz en **espa√
 npm install
 npm run dev
 npm test
+npm run build && npm run e2e   # browser tests (Playwright) incl. accessibility checks
 npm run build   # output in dist/ (static site, includes the offline service worker)
 ```
 

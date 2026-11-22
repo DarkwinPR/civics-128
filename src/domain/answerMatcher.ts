@@ -1,6 +1,7 @@
 import { t } from '../i18n';
 import { getEffectiveAnswers } from './questions';
 import type { AnswerMatchResult, CivicsQuestion, OfficialOverrides } from './types';
+import { isNearMiss } from './textDistance';
 
 const NUMBER_REPLACEMENTS: ReadonlyArray<readonly [RegExp, string]> = [
   [/\bfour hundred(?: and)? thirty[\s-]?five\b/g, '435'],
@@ -88,6 +89,8 @@ const STOPWORDS = new Set([
 
 export function normalizeText(input: string): string {
   let text = input
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/['’`]/g, '')
     .replace(/[-/]/g, ' ')
@@ -165,6 +168,11 @@ function matchSingleVariant(userNorm: string, userTokens: Set<string>, variant: 
         (token.length >= 4 && ut.startsWith(token)) ||
         (ut.length >= 4 && token.startsWith(ut))
       ) {
+        hits += 1;
+        break;
+      }
+      // Spelling or accent slips: "constitucion", "jeferson", "missisipi"
+      if (isNearMiss(token, ut)) {
         hits += 1;
         break;
       }

@@ -16,7 +16,7 @@ import {
   type PracticeSentence,
   type VocabGroup,
 } from '../../domain/englishTest';
-import type { EnglishSentenceProgress, PersistedState } from '../../domain/types';
+import type { AppView, EnglishSentenceProgress, PersistedState } from '../../domain/types';
 import { getLang, t } from '../../i18n';
 import {
   isSpeechRecognitionSupported,
@@ -29,12 +29,14 @@ import {
 import { getEnglishProgress, type EnglishPart } from '../../services/storage';
 import { announce } from '../announcer';
 import { escapeHtml, ICONS } from '../dom';
+import { mountEnglishMockInterview } from './englishMockInterview';
 
-type EnglishTab = 'reading' | 'writing' | 'interview' | 'vocab';
+type EnglishTab = 'reading' | 'writing' | 'interview' | 'mock' | 'vocab';
 
 export interface EnglishTestCallbacks {
   getState: () => PersistedState;
   onRecordAttempt: (part: EnglishPart, id: string, passed: boolean) => void;
+  onNavigate?: (view: AppView) => void;
 }
 
 const WELCOME_KEY = 'civics128:englishWelcome:v1';
@@ -76,6 +78,7 @@ export function mountEnglishTestView(
   let showTranslation = false;
   let showHint = false;
   let showWelcome = !welcomeDismissed();
+  let cleanupMock: (() => void) | null = null;
 
   let typed = '';
   let writingResult: WritingResult | null = null;
@@ -514,8 +517,12 @@ export function mountEnglishTestView(
           ? renderWriting()
           : tab === 'interview'
             ? renderInterview()
-            : renderVocab();
+            : tab === 'mock'
+              ? '<div id="english-mock-root"></div>'
+              : renderVocab();
 
+    cleanupMock?.();
+    cleanupMock = null;
     container.innerHTML = `
       <div class="${tab === 'vocab' ? '' : 'study-stage-wrapper'}">
         <div class="view-header">
@@ -529,11 +536,21 @@ export function mountEnglishTestView(
           ${tabButton('reading', t('english.tabReading'))}
           ${tabButton('writing', t('english.tabWriting'))}
           ${tabButton('interview', t('english.tabInterview'))}
+          ${tabButton('mock', t('english.tabMock'))}
           ${tabButton('vocab', t('english.tabVocab'))}
         </div>
         ${body}
-        ${tab === 'vocab' ? '' : renderProgress()}
+        ${tab === 'vocab' || tab === 'mock' ? '' : renderProgress()}
       </div>`;
+
+    const mockRoot = container.querySelector<HTMLElement>('#english-mock-root');
+    if (mockRoot) {
+      cleanupMock = mountEnglishMockInterview(mockRoot, {
+        getState: callbacks.getState,
+        onRecordAttempt: callbacks.onRecordAttempt,
+        onNavigate: callbacks.onNavigate,
+      });
+    }
   };
 
   const move = (delta: 1 | -1) => {
@@ -775,6 +792,7 @@ export function mountEnglishTestView(
   render();
 
   return () => {
+    cleanupMock?.();
     stopMic();
     stopSpeaking();
     container.removeEventListener('click', onClick);

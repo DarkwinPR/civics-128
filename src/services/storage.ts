@@ -243,6 +243,33 @@ export function recordPracticeResult(
   return next;
 }
 
+export interface MissedQuestion {
+  id: number;
+  misses: number;
+  attempts: number;
+}
+
+/**
+ * Questions answered wrong most often (oral coach, mock exam), hardest first.
+ * Only questions still missed more often than recently mastered stay in the list:
+ * once a card reaches a long-term box it drops out.
+ */
+export function getMostMissed(
+  state: PersistedState,
+  questionIds: readonly number[],
+  limit = 10,
+): MissedQuestion[] {
+  return questionIds
+    .map((id) => {
+      const p = getQuestionProgress(state, id);
+      return { id, misses: p.attempts - p.correct, attempts: p.attempts, box: p.box ?? 0 };
+    })
+    .filter((m) => m.misses > 0 && m.box < 3)
+    .sort((a, b) => b.misses - a.misses || b.misses / b.attempts - a.misses / a.attempts || a.id - b.id)
+    .slice(0, limit)
+    .map(({ id, misses, attempts }) => ({ id, misses, attempts }));
+}
+
 export function addExamRecord(state: PersistedState, record: ExamRecord): PersistedState {
   const next: PersistedState = {
     ...state,

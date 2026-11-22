@@ -8,16 +8,17 @@ import {
 } from '../../domain/questions';
 import { shuffleArray } from '../../domain/examEngine';
 import type { CivicsCategory, CivicsQuestion, MasteryStatus, PersistedState } from '../../domain/types';
-import { getQuestionProgress, isDueForReview } from '../../services/storage';
+import { getMostMissed, getQuestionProgress, isDueForReview } from '../../services/storage';
 import { renderReportLink, renderTranslationToggle } from '../translation';
 import { t } from '../../i18n';
 import { isSpeechSynthesisSupported, speakText, stopSpeaking } from '../../services/speech';
 import { announce } from '../announcer';
 import { escapeHtml, ICONS } from '../dom';
 
-export type FlashcardFilter = 'all' | '65-20' | 'review' | 'due' | CivicsCategory;
+export type FlashcardFilter = 'all' | '65-20' | 'review' | 'due' | 'missed' | CivicsCategory;
 
 const AUTO_REVEAL_MS = 7000;
+export const MISSED_LIMIT = 10;
 
 export interface FlashcardsViewState {
   filter: FlashcardFilter;
@@ -59,6 +60,10 @@ function buildDeck(
     list = list.filter((q) => q.is6520);
   } else if (filter === 'review') {
     list = list.filter((q) => getQuestionProgress(state, q.id).status === 'review');
+  } else if (filter === 'missed') {
+    // Hardest questions first, in the order of how often they were missed.
+    const ids = getMostMissed(state, list.map((q) => q.id), MISSED_LIMIT).map((m) => m.id);
+    return ids.map((id) => list.find((q) => q.id === id)!).filter(Boolean);
   } else if (filter === 'due') {
     // Smart review: cards whose spaced-repetition date has arrived, oldest first.
     const now = new Date();
@@ -321,12 +326,16 @@ export function mountFlashcardsView(
       isDueForReview(getQuestionProgress(appState, q.id)),
     ).length;
     const starredCount = CIVICS_QUESTIONS.filter((q) => q.is6520).length;
+    const missedCount = getMostMissed(appState, CIVICS_QUESTIONS.map((q) => q.id), MISSED_LIMIT).length;
 
     const filters: Array<{ id: FlashcardFilter; label: string }> = [
       { id: 'all', label: t('flashcards.filterAll', { n: CIVICS_QUESTIONS.length }) },
       { id: 'due', label: t('flashcards.filterDue', { n: dueCount }) },
       { id: '65-20', label: t('flashcards.filter6520', { n: starredCount }) },
       { id: 'review', label: t('flashcards.filterReview', { n: reviewCount }) },
+      ...(missedCount > 0 || viewState.filter === 'missed'
+        ? [{ id: 'missed' as FlashcardFilter, label: t('flashcards.filterMissed', { n: missedCount }) }]
+        : []),
       ...CATEGORIES.map((c) => ({ id: c as FlashcardFilter, label: t(`category.${c}`) })),
     ];
 
