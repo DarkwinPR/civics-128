@@ -11,6 +11,8 @@ import {
   stopSpeaking,
   type ListeningSession,
 } from '../../services/speech';
+import { t } from '../../i18n';
+import { renderTranslationToggle } from '../translation';
 import { announce } from '../announcer';
 import { escapeHtml, ICONS } from '../dom';
 
@@ -40,6 +42,7 @@ export function mountOralPracticeView(
   let sessionCorrect = 0;
   let sessionPracticed = 0;
   let activeMic: ListeningSession | null = null;
+  let showTranslation = false;
 
   const stopAudio = () => {
     stopSpeaking();
@@ -74,6 +77,7 @@ export function mountOralPracticeView(
 
     queue = list;
     index = 0;
+    showTranslation = false;
     transcript = '';
     micError = '';
     evaluation = null;
@@ -130,7 +134,7 @@ export function mountOralPracticeView(
       onStart: () => {
         listening = true;
         render();
-        announce('Microphone active. Answer in English.');
+        announce(t('oral.announceMic'));
       },
       onInterim: (text) => {
         transcript = text;
@@ -165,6 +169,7 @@ export function mountOralPracticeView(
       if (markCorrect) sessionCorrect += 1;
     }
     index = (index + 1) % Math.max(1, queue.length);
+    showTranslation = false;
     transcript = '';
     micError = '';
     evaluation = null;
@@ -181,10 +186,10 @@ export function mountOralPracticeView(
 
     const effectiveAnswers = getEffectiveAnswers(q, appState.settings.officials);
     const poolOptions: Array<{ id: OralPool; label: string }> = [
-      { id: 'smart', label: 'Smart Focus' },
-      { id: 'all', label: 'All 128' },
-      { id: '65-20', label: '65/20 ★' },
-      ...CATEGORIES.map((c) => ({ id: c as OralPool, label: c })),
+      { id: 'smart', label: t('oral.poolSmart') },
+      { id: 'all', label: t('oral.poolAll') },
+      { id: '65-20', label: t('oral.pool6520') },
+      ...CATEGORIES.map((c) => ({ id: c as OralPool, label: t(`category.${c}`) })),
     ];
 
     const showPromptText = !hideTextUntilAnswered || evaluation !== null;
@@ -193,17 +198,17 @@ export function mountOralPracticeView(
       <div class="study-stage-wrapper">
         <div class="view-header">
           <div>
-            <h1 id="main-heading" tabindex="-1">Oral Voice Coach</h1>
+            <h1 id="main-heading" tabindex="-1">${escapeHtml(t('oral.title'))}</h1>
             <p class="view-lead">
-              Train for the real interview: listen to the officer ask a question, speak your answer in English, and check it immediately against USCIS answers.
+              ${escapeHtml(t('oral.lead'))}
             </p>
           </div>
           <div class="badge-row">
-            <span class="badge badge--mastered">Session: ${sessionCorrect} / ${sessionPracticed}</span>
+            <span class="badge badge--mastered">${escapeHtml(t('oral.session', { correct: sessionCorrect, total: sessionPracticed }))}</span>
           </div>
         </div>
 
-        <div class="pill-bar" role="group" aria-label="Oral practice focus" style="margin-block-end:1rem;">
+        <div class="pill-bar" role="group" aria-label="${escapeHtml(t('oral.poolAria'))}" style="margin-block-end:1rem;">
           ${poolOptions
             .map(
               (opt) => `
@@ -226,19 +231,19 @@ export function mountOralPracticeView(
           <div style="margin-block-end:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
             <label style="display:inline-flex;align-items:center;gap:0.5rem;font-size:0.9rem;cursor:pointer;">
               <input id="oral-blind-toggle" type="checkbox" ${hideTextUntilAnswered ? 'checked' : ''} />
-              Ear-training mode (hide question text until answered)
+              ${escapeHtml(t('oral.earTraining'))}
             </label>
-            <span style="font-size:0.85rem;color:var(--text-muted);">Question ${index + 1} of ${queue.length}</span>
+            <span style="font-size:0.85rem;color:var(--text-muted);">${escapeHtml(t('oral.counter', { n: index + 1, total: queue.length }))}</span>
           </div>
         `
-            : `<p class="notice notice--gold" style="margin-block-end:1rem;">Your browser does not expose Text-to-Speech. You can still practice answering orally or typing below.</p>`
+            : `<p class="notice notice--gold" style="margin-block-end:1rem;">${escapeHtml(t('oral.noTts'))}</p>`
         }
 
         <article class="question-card">
           <div class="question-card-top">
             <div class="badge-row">
               <span class="badge badge--number">Q${displayNumber(q)}</span>
-              <span class="badge badge--category">${escapeHtml(q.category)}</span>
+              <span class="badge badge--category">${escapeHtml(t(`category.${q.category}`))}</span>
               ${q.is6520 ? `<span class="badge badge--6520">★ 65/20</span>` : ''}
             </div>
             ${
@@ -250,7 +255,7 @@ export function mountOralPracticeView(
                 class="btn ${speaking ? 'btn--danger' : 'btn--primary'}"
               >
                 ${speaking ? ICONS.stop : ICONS.volume}
-                ${speaking ? 'Stop Officer' : 'Officer: Ask Question'}
+                ${escapeHtml(speaking ? t('oral.stopOfficer') : t('oral.askOfficer'))}
               </button>
             `
                 : ''
@@ -259,18 +264,19 @@ export function mountOralPracticeView(
 
           ${
             showPromptText
-              ? `<h2 class="question-stem">${escapeHtml(q.question)}</h2>`
+              ? `<h2 class="question-stem">${escapeHtml(q.question)}</h2>
+              ${renderTranslationToggle(q, showTranslation, evaluation !== null)}`
               : `
             <div class="answer-hidden-box">
-              <p><strong>Ear-training mode active.</strong> Press "Officer: Ask Question" and answer from listening alone.</p>
-              <button type="button" id="oral-peek-btn" class="btn btn--ghost">Show Question Text</button>
+              <p><strong>${escapeHtml(t('oral.earActiveTitle'))}</strong> ${escapeHtml(t('oral.earActiveHelp', { button: t('oral.askOfficer') }))}</p>
+              <button type="button" id="oral-peek-btn" class="btn btn--ghost">${escapeHtml(t('oral.showText'))}</button>
             </div>
           `
           }
 
           ${
             q.requiredCount > 1
-              ? `<p class="notice notice--info" style="margin:0;">Remember to name <strong>${q.requiredCount}</strong> distinct items.</p>`
+              ? `<p class="notice notice--info" style="margin:0;">${t('oral.requiredCount', { n: q.requiredCount })}</p>`
               : ''
           }
 
@@ -284,13 +290,13 @@ export function mountOralPracticeView(
                   id="oral-mic-btn"
                   class="btn btn--lg ${listening ? 'btn--danger is-listening' : 'btn--primary'} mic-btn"
                 >
-                  ${ICONS.mic} ${listening ? 'Listening… Tap to Finish' : 'Speak Your Answer'}
+                  ${ICONS.mic} ${escapeHtml(listening ? t('oral.listeningBtn') : t('oral.speakBtn'))}
                 </button>
               `
-                  : `<p class="notice" style="margin:0;">Speech recognition requires Chrome, Edge, or Safari with microphone permission. Type your English response below to evaluate it.</p>`
+                  : `<p class="notice" style="margin:0;">${escapeHtml(t('oral.noMic'))}</p>`
               }
               <button type="button" id="oral-reveal-btn" class="btn btn--secondary" style="margin-inline-start:auto;">
-                Reveal Answers
+                ${escapeHtml(t('oral.reveal'))}
               </button>
             </div>
 
@@ -298,8 +304,8 @@ export function mountOralPracticeView(
               listening || transcript
                 ? `
               <div class="transcript-box">
-                <span class="transcript-label">${listening ? 'Listening Live…' : 'Captured Response'}</span>
-                <span id="oral-live-transcript">${escapeHtml(transcript || 'Speak clearly in English…')}</span>
+                <span class="transcript-label">${escapeHtml(listening ? t('oral.listeningLive') : t('oral.captured'))}</span>
+                <span id="oral-live-transcript">${escapeHtml(transcript || t('oral.speakClearly'))}</span>
               </div>
             `
                 : ''
@@ -308,15 +314,15 @@ export function mountOralPracticeView(
             ${micError ? `<p class="notice notice--error" style="margin:0;">${escapeHtml(micError)}</p>` : ''}
 
             <form id="oral-typed-form" class="typed-answer-form">
-              <label for="oral-typed-input" class="visually-hidden">Type your spoken response</label>
+              <label for="oral-typed-input" class="visually-hidden">${escapeHtml(t('oral.typedLabel'))}</label>
               <input
                 id="oral-typed-input"
                 type="text"
                 class="text-input"
                 value="${escapeHtml(transcript)}"
-                placeholder="Or type your answer in English…"
+                placeholder="${escapeHtml(t('oral.typedPlaceholder'))}"
               />
-              <button type="submit" class="btn btn--secondary">Evaluate</button>
+              <button type="submit" class="btn btn--secondary">${escapeHtml(t('oral.evaluate'))}</button>
             </form>
           </div>
 
@@ -327,7 +333,7 @@ export function mountOralPracticeView(
               <p class="notice ${evaluation.isMatch ? 'notice--success' : 'notice--info'}" style="margin:0;">
                 ${escapeHtml(evaluation.feedback)}
               </p>
-              <h3 class="answer-panel-title">Official USCIS Accepted Answers</h3>
+              <h3 class="answer-panel-title">${escapeHtml(t('oral.answersTitle'))}</h3>
               <ul class="answer-list">
                 ${effectiveAnswers
                   .map((ans) => {
@@ -340,14 +346,14 @@ export function mountOralPracticeView(
 
               <div class="card-actions">
                 <button type="button" id="oral-retry-btn" class="btn btn--ghost">
-                  ${ICONS.rotate} Try Speaking Again
+                  ${ICONS.rotate} ${escapeHtml(t('oral.retry'))}
                 </button>
                 <div class="card-action-group">
                   <button type="button" id="oral-flag-next" class="btn btn--soft-danger">
-                    Needs Review &amp; Next
+                    ${escapeHtml(t('oral.flagNext'))}
                   </button>
                   <button type="button" id="oral-pass-next" class="btn btn--success">
-                    ${ICONS.check} Got It &amp; Next
+                    ${ICONS.check} ${escapeHtml(t('oral.passNext'))}
                   </button>
                 </div>
               </div>
@@ -355,8 +361,8 @@ export function mountOralPracticeView(
           `
               : `
             <div class="card-actions">
-              <span class="field-hint">Tip: Practice answering clearly in full phrases just like the naturalization interview.</span>
-              <button type="button" id="oral-skip-btn" class="btn btn--ghost">Skip ${ICONS.arrowRight}</button>
+              <span class="field-hint">${escapeHtml(t('oral.tip'))}</span>
+              <button type="button" id="oral-skip-btn" class="btn btn--ghost">${escapeHtml(t('oral.skip'))} ${ICONS.arrowRight}</button>
             </div>
           `
           }
@@ -381,6 +387,11 @@ export function mountOralPracticeView(
 
     container.querySelector('#oral-peek-btn')?.addEventListener('click', () => {
       hideTextUntilAnswered = false;
+      render();
+    });
+
+    container.querySelector('[data-action="toggle-translation"]')?.addEventListener('click', () => {
+      showTranslation = !showTranslation;
       render();
     });
 

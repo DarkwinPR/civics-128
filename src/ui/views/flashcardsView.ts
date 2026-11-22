@@ -10,6 +10,7 @@ import { shuffleArray } from '../../domain/examEngine';
 import type { CivicsCategory, CivicsQuestion, MasteryStatus, PersistedState } from '../../domain/types';
 import { getQuestionProgress, isDueForReview } from '../../services/storage';
 import { renderReportLink, renderTranslationToggle } from '../translation';
+import { t } from '../../i18n';
 import { isSpeechSynthesisSupported, speakText, stopSpeaking } from '../../services/speech';
 import { announce } from '../announcer';
 import { escapeHtml, ICONS } from '../dom';
@@ -103,7 +104,7 @@ export function mountFlashcardsView(
     const seconds = Math.max(0, Math.ceil(remainingMs / 1000));
     const secEl = container.querySelector<HTMLElement>('#fc-timer-seconds');
     if (secEl) {
-      secEl.textContent = `${seconds}s`;
+      secEl.textContent = t('flashcards.seconds', { n: seconds });
       secEl.classList.toggle('is-urgent', remainingMs <= 2000);
     }
     const barEl = container.querySelector<HTMLProgressElement>('#fc-timer-progress');
@@ -138,7 +139,7 @@ export function mountFlashcardsView(
         stopCountdown();
         viewState.revealed = true;
         render();
-        announce('Time is up. Official answers shown.');
+        announce(t('flashcards.announceTimeUp'));
         return;
       }
       syncCountdownDom();
@@ -162,8 +163,8 @@ export function mountFlashcardsView(
     render();
     announce(
       viewState.timerEnabled
-        ? '7-second auto-reveal timer enabled.'
-        : '7-second auto-reveal timer disabled.',
+        ? t('flashcards.announceTimerOn')
+        : t('flashcards.announceTimerOff'),
     );
   };
 
@@ -172,7 +173,7 @@ export function mountFlashcardsView(
     timerPaused = !timerPaused;
     lastTickAt = performance.now();
     render();
-    announce(timerPaused ? 'Countdown paused.' : 'Countdown resumed.');
+    announce(timerPaused ? t('flashcards.announcePaused') : t('flashcards.announceResumed'));
   };
 
   const rebuildDeck = (nextFilter: FlashcardFilter, nextShuffled: boolean) => {
@@ -248,7 +249,7 @@ export function mountFlashcardsView(
       resetCountdown();
     }
     render();
-    announce(viewState.revealed ? 'Official answers shown.' : 'Answers hidden.');
+    announce(viewState.revealed ? t('flashcards.announceShown') : t('flashcards.announceHidden'));
   };
 
   const markStatus = (status: MasteryStatus) => {
@@ -257,8 +258,8 @@ export function mountFlashcardsView(
     callbacks.onSetStatus(qId, status);
     announce(
       status === 'mastered'
-        ? `Question ${qId} marked as mastered.`
-        : `Question ${qId} flagged for review.`,
+        ? t('flashcards.announceMastered', { id: qId })
+        : t('flashcards.announceReview', { id: qId }),
     );
 
     if (viewState.filter === 'review' && status === 'mastered') {
@@ -322,11 +323,11 @@ export function mountFlashcardsView(
     const starredCount = CIVICS_QUESTIONS.filter((q) => q.is6520).length;
 
     const filters: Array<{ id: FlashcardFilter; label: string }> = [
-      { id: 'all', label: `All (${CIVICS_QUESTIONS.length})` },
-      { id: 'due', label: `Smart Review (${dueCount})` },
-      { id: '65-20', label: `65/20 ★ (${starredCount})` },
-      { id: 'review', label: `Needs Review (${reviewCount})` },
-      ...CATEGORIES.map((c) => ({ id: c as FlashcardFilter, label: c })),
+      { id: 'all', label: t('flashcards.filterAll', { n: CIVICS_QUESTIONS.length }) },
+      { id: 'due', label: t('flashcards.filterDue', { n: dueCount }) },
+      { id: '65-20', label: t('flashcards.filter6520', { n: starredCount }) },
+      { id: 'review', label: t('flashcards.filterReview', { n: reviewCount }) },
+      ...CATEGORIES.map((c) => ({ id: c as FlashcardFilter, label: t(`category.${c}`) })),
     ];
 
     const currentId = viewState.deckIds[viewState.index];
@@ -343,8 +344,8 @@ export function mountFlashcardsView(
       <div class="study-stage-wrapper">
         <div class="view-header">
           <div>
-            <h1 id="main-heading" tabindex="-1">Flashcards</h1>
-            <p class="view-lead">Say your answer aloud in English before revealing the official USCIS bullets.</p>
+            <h1 id="main-heading" tabindex="-1">${escapeHtml(t('flashcards.title'))}</h1>
+            <p class="view-lead">${escapeHtml(t('flashcards.lead'))}</p>
           </div>
           <div class="card-action-group">
             <button
@@ -353,7 +354,7 @@ export function mountFlashcardsView(
               class="btn ${viewState.timerEnabled ? 'btn--primary' : 'btn--secondary'}"
               aria-pressed="${viewState.timerEnabled}"
             >
-              7s Auto-Reveal: ${viewState.timerEnabled ? 'On' : 'Off'}
+              ${escapeHtml(viewState.timerEnabled ? t('flashcards.timerOn') : t('flashcards.timerOff'))}
             </button>
             <button
               type="button"
@@ -361,12 +362,12 @@ export function mountFlashcardsView(
               class="btn ${viewState.shuffled ? 'btn--primary' : 'btn--secondary'}"
               aria-pressed="${viewState.shuffled}"
             >
-              ${ICONS.shuffle} ${viewState.shuffled ? 'Shuffled' : 'Shuffle Deck'}
+              ${ICONS.shuffle} ${escapeHtml(viewState.shuffled ? t('flashcards.shuffled') : t('flashcards.shuffle'))}
             </button>
           </div>
         </div>
 
-        <div class="pill-bar" role="group" aria-label="Filter flashcards" style="margin-block-end:1.15rem;">
+        <div class="pill-bar" role="group" aria-label="${escapeHtml(t('flashcards.filterAria'))}" style="margin-block-end:1.15rem;">
           ${filters
             .map(
               (f) => `
@@ -387,43 +388,43 @@ export function mountFlashcardsView(
           !question
             ? `
           <div class="surface-card" style="text-align:center;padding:2.5rem 1.5rem;">
-            <h2 style="margin:0 0 0.5rem;">No cards in this filter</h2>
+            <h2 style="margin:0 0 0.5rem;">${escapeHtml(t('flashcards.emptyTitle'))}</h2>
             <p style="margin:0 0 1.25rem;color:var(--text-secondary);">
               ${
                 viewState.filter === 'review'
-                  ? 'You have cleared every card flagged for review. Nice work!'
-                  : 'Try selecting another category.'
+                  ? escapeHtml(t('flashcards.emptyReview'))
+                  : escapeHtml(t('flashcards.emptyOther'))
               }
             </p>
-            <button type="button" id="fc-show-all-btn" class="btn btn--primary">Study All 128 Questions</button>
+            <button type="button" id="fc-show-all-btn" class="btn btn--primary">${escapeHtml(t('flashcards.studyAll'))}</button>
           </div>
         `
             : `
           <div class="study-toolbar">
             <span style="font-weight:700;font-size:0.92rem;font-variant-numeric:tabular-nums;">
-              Card ${viewState.index + 1} of ${viewState.deckIds.length}
+              ${escapeHtml(t('flashcards.cardCount', { n: viewState.index + 1, total: viewState.deckIds.length }))}
             </span>
             <progress
               class="progress-track"
               style="max-inline-size:16rem;"
               max="${viewState.deckIds.length}"
               value="${viewState.index + 1}"
-              aria-label="Deck position ${viewState.index + 1} of ${viewState.deckIds.length}"
+              aria-label="${escapeHtml(t('flashcards.deckAria', { n: viewState.index + 1, total: viewState.deckIds.length }))}"
             ></progress>
           </div>
 
-          <article class="question-card" aria-label="Flashcard ${question.id}">
+          <article class="question-card" aria-label="${escapeHtml(t('flashcards.cardAria', { id: question.id }))}">
             <div class="question-card-top">
               <div class="badge-row">
                 <span class="badge badge--number">Q${displayNumber(question)}</span>
-                <span class="badge badge--category">${escapeHtml(question.category)}</span>
+                <span class="badge badge--category">${escapeHtml(t(`category.${question.category}`))}</span>
                 ${question.is6520 ? `<span class="badge badge--6520">★ 65/20</span>` : ''}
-                ${question.dynamicKey ? `<span class="badge badge--dynamic">Current Official</span>` : ''}
+                ${question.dynamicKey ? `<span class="badge badge--dynamic">${escapeHtml(t('badge.currentOfficial'))}</span>` : ''}
                 ${
                   progress?.status === 'mastered'
-                    ? `<span class="badge badge--mastered">Mastered</span>`
+                    ? `<span class="badge badge--mastered">${escapeHtml(t('badge.mastered'))}</span>`
                     : progress?.status === 'review'
-                      ? `<span class="badge badge--review">Needs Review</span>`
+                      ? `<span class="badge badge--review">${escapeHtml(t('badge.review'))}</span>`
                       : ''
                 }
               </div>
@@ -435,10 +436,10 @@ export function mountFlashcardsView(
                   type="button"
                   id="fc-speak-btn"
                   class="icon-btn ${isSpeaking ? 'is-speaking' : ''}"
-                  aria-label="${isSpeaking ? 'Stop reading aloud' : `Listen to question ${question.id}`}"
+                  aria-label="${escapeHtml(isSpeaking ? t('flashcards.stopAria') : t('flashcards.listenAria', { id: question.id }))}"
                 >
                   ${isSpeaking ? ICONS.stop : ICONS.volume}
-                  <span>${isSpeaking ? 'Stop' : 'Listen'}</span>
+                  <span>${escapeHtml(isSpeaking ? t('flashcards.stop') : t('flashcards.listen'))}</span>
                 </button>
               `
                   : ''
@@ -451,7 +452,7 @@ export function mountFlashcardsView(
 
             ${
               question.requiredCount > 1
-                ? `<p class="notice notice--info" style="margin:0;">This question requires <strong>${question.requiredCount}</strong> distinct answers on the exam.</p>`
+                ? `<p class="notice notice--info" style="margin:0;">${t('flashcards.requiredCount', { n: question.requiredCount })}</p>`
                 : ''
             }
 
@@ -460,10 +461,10 @@ export function mountFlashcardsView(
                 ? `
               <div class="answer-panel">
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;">
-                  <h3 class="answer-panel-title">Official USCIS Accepted Answer${effectiveAnswers.length > 1 ? 's' : ''}</h3>
+                  <h3 class="answer-panel-title">${escapeHtml(effectiveAnswers.length > 1 ? t('flashcards.answersTitle') : t('flashcards.answerTitle'))}</h3>
                   ${
                     ttsSupported
-                      ? `<button type="button" id="fc-speak-answers-btn" class="btn btn--ghost" style="padding:0.25rem 0.6rem;min-block-size:2rem;font-size:0.84rem;">${ICONS.volume} Read Answer</button>`
+                      ? `<button type="button" id="fc-speak-answers-btn" class="btn btn--ghost" style="padding:0.25rem 0.6rem;min-block-size:2rem;font-size:0.84rem;">${ICONS.volume} ${escapeHtml(t('flashcards.readAnswer'))}</button>`
                       : ''
                   }
                 </div>
@@ -474,8 +475,8 @@ export function mountFlashcardsView(
                 ${
                   needsCustomState
                     ? `<div class="notice notice--gold" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.6rem;">
-                        <span>Set your state's current answer in Settings so you can drill it accurately.</span>
-                        <button type="button" id="fc-open-settings" class="btn btn--secondary">Configure in Settings</button>
+                        <span>${escapeHtml(t('flashcards.customState'))}</span>
+                        <button type="button" id="fc-open-settings" class="btn btn--secondary">${escapeHtml(t('flashcards.configure'))}</button>
                       </div>`
                     : ''
                 }
@@ -488,29 +489,29 @@ export function mountFlashcardsView(
                     ? `
                   <div class="countdown-panel">
                     <div class="countdown-header">
-                      <span>${timerPaused ? 'Auto-reveal paused' : 'Auto-revealing answer in'}</span>
-                      <strong id="fc-timer-seconds" class="countdown-seconds ${remainingMs <= 2000 ? 'is-urgent' : ''}">${Math.max(0, Math.ceil(remainingMs / 1000))}s</strong>
+                      <span>${escapeHtml(timerPaused ? t('flashcards.timerPaused') : t('flashcards.timerRunning'))}</span>
+                      <strong id="fc-timer-seconds" class="countdown-seconds ${remainingMs <= 2000 ? 'is-urgent' : ''}">${escapeHtml(t('flashcards.seconds', { n: Math.max(0, Math.ceil(remainingMs / 1000)) }))}</strong>
                     </div>
                     <progress
                       id="fc-timer-progress"
                       class="progress-track ${remainingMs <= 2000 ? 'progress-track--urgent' : ''}"
                       max="${AUTO_REVEAL_MS}"
                       value="${Math.max(0, Math.round(remainingMs))}"
-                      aria-label="Countdown to auto-reveal answer"
+                      aria-label="${escapeHtml(t('flashcards.timerAria'))}"
                     ></progress>
                   </div>
                 `
-                    : `<p>Answer aloud in English first, then reveal the official USCIS list.</p>`
+                    : `<p>${escapeHtml(t('flashcards.noTimerHint'))}</p>`
                 }
                 <div class="card-action-group" style="justify-content:center;">
                   <button type="button" id="fc-reveal-btn" class="btn btn--primary">
-                    Show Official Answer
+                    ${escapeHtml(t('flashcards.reveal'))}
                   </button>
                   ${
                     viewState.timerEnabled
                       ? `
                     <button type="button" id="fc-timer-pause-btn" class="btn btn--secondary" aria-pressed="${timerPaused}">
-                      ${timerPaused ? 'Resume Timer' : 'Pause Timer'}
+                      ${escapeHtml(timerPaused ? t('flashcards.resumeTimer') : t('flashcards.pauseTimer'))}
                     </button>
                   `
                       : ''
@@ -522,33 +523,33 @@ export function mountFlashcardsView(
 
             <div class="card-actions">
               <div class="card-action-group">
-                <button type="button" id="fc-prev-btn" class="btn btn--secondary" aria-label="Previous flashcard">
-                  ${ICONS.arrowLeft} Prev
+                <button type="button" id="fc-prev-btn" class="btn btn--secondary" aria-label="${escapeHtml(t('flashcards.prevAria'))}">
+                  ${ICONS.arrowLeft} ${escapeHtml(t('flashcards.prev'))}
                 </button>
-                <button type="button" id="fc-next-btn" class="btn btn--secondary" aria-label="Next flashcard">
-                  Next ${ICONS.arrowRight}
+                <button type="button" id="fc-next-btn" class="btn btn--secondary" aria-label="${escapeHtml(t('flashcards.nextAria'))}">
+                  ${escapeHtml(t('flashcards.next'))} ${ICONS.arrowRight}
                 </button>
               </div>
 
               <div class="card-action-group">
                 <button type="button" id="fc-review-btn" class="btn btn--soft-danger">
-                  Needs Review
+                  ${escapeHtml(t('badge.review'))}
                 </button>
                 <button type="button" id="fc-mastered-btn" class="btn btn--soft-success">
-                  ${ICONS.check} Mastered
+                  ${ICONS.check} ${escapeHtml(t('badge.mastered'))}
                 </button>
               </div>
             </div>
             <p class="report-row">${renderReportLink(question, getTestVersion())}</p>
           </article>
 
-          <div class="kbd-hint" aria-label="Keyboard shortcuts">
-            <span><kbd>Space</kbd> Reveal</span>
-            <span><kbd>←</kbd> <kbd>→</kbd> Navigate</span>
-            ${viewState.timerEnabled ? `<span><kbd>P</kbd> Pause Timer</span>` : ''}
-            ${ttsSupported ? `<span><kbd>L</kbd> Listen</span>` : ''}
-            <span><kbd>1</kbd> Needs Review</span>
-            <span><kbd>2</kbd> Mastered</span>
+          <div class="kbd-hint" aria-label="${escapeHtml(t('flashcards.kbdAria'))}">
+            <span><kbd>${escapeHtml(t('flashcards.keySpace'))}</kbd> ${escapeHtml(t('flashcards.kbdReveal'))}</span>
+            <span><kbd>←</kbd> <kbd>→</kbd> ${escapeHtml(t('flashcards.kbdNavigate'))}</span>
+            ${viewState.timerEnabled ? `<span><kbd>P</kbd> ${escapeHtml(t('flashcards.pauseTimer'))}</span>` : ''}
+            ${ttsSupported ? `<span><kbd>L</kbd> ${escapeHtml(t('flashcards.listen'))}</span>` : ''}
+            <span><kbd>1</kbd> ${escapeHtml(t('badge.review'))}</span>
+            <span><kbd>2</kbd> ${escapeHtml(t('badge.mastered'))}</span>
           </div>
         `
         }
