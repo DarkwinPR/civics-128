@@ -834,3 +834,316 @@ dialog.modal-dialog {
     box-shadow: 0 0 0 8px transparent;
   }
 }
+
+/* ---------- Today strip (streak, goal, smart review, share) ---------- */
+.today-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+  gap: 0.85rem;
+  margin-block-end: 1.25rem;
+}
+
+.today-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  color: inherit;
+  text-decoration: none;
+}
+
+.today-card > div {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  flex: 1;
+}
+
+.today-card--due {
+  justify-content: space-between;
+}
+
+.today-card--streak {
+  background: linear-gradient(135deg, color-mix(in srgb, #ff8a00 16%, var(--bg-surface)), var(--bg-surface));
+}
+
+.today-card--share {
+  background: linear-gradient(135deg, color-mix(in srgb, #25d366 18%, var(--bg-surface)), var(--bg-surface));
+  transition: transform 0.2s var(--ease-pop);
+}
+
+.today-card--share:hover {
+  color: inherit;
+  transform: translateY(-2px);
+}
+
+.today-emoji {
+  font-size: 1.9rem;
+  line-height: 1;
+}
+
+.today-value {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.today-label {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.today-label--strong {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.mini-ring {
+  inline-size: 3.2rem;
+  block-size: 3.2rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(var(--usa-green) calc(var(--pct, 0) * 1%), var(--bg-subtle) 0);
+  position: relative;
+}
+
+.mini-ring span {
+  display: grid;
+  place-items: center;
+  inline-size: 2.4rem;
+  block-size: 2.4rem;
+  border-radius: 50%;
+  background-color: var(--bg-surface);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+/* ---------- Spanish translation helper ---------- */
+.translation-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.translation-toggle {
+  padding: 0.25rem 0.7rem;
+  min-block-size: 2rem;
+  font-size: 0.86rem;
+  color: var(--brand);
+}
+
+.translation-box {
+  margin: 0;
+  inline-size: 100%;
+  padding: 0.75rem 0.95rem;
+  border-radius: var(--radius-md);
+  background-color: var(--gold-soft);
+  border-inline-start: 4px solid var(--usa-gold);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.translation-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+}
+
+.translation-answers {
+  margin: 0.2rem 0 0;
+  padding-inline-start: 1.2rem;
+  font-size: 0.92rem;
+}
+
+.report-row {
+  margin: 0;
+  text-align: end;
+}
+
+.report-link {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ---------- English test ---------- */
+.english-sentence {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 4.5cqi, 2.2rem);
+  font-weight: 700;
+  line-height: 1.3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.english-sentence--small {
+  font-size: 1.25rem;
+}
+
+.word-marks {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.word-mark {
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.4rem;
+  font-weight: 700;
+}
+
+.word-mark.is-ok {
+  background-color: var(--success-soft);
+  color: var(--success);
+}
+
+.word-mark.is-wrong {
+  background-color: var(--crimson-soft);
+  color: var(--crimson);
+  text-decoration: underline wavy;
+}
+
+.vocab-group + .vocab-group {
+  margin-block-start: 1rem;
+}
+
+.vocab-group h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.vocab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.vocab-chip {
+  appearance: none;
+  border: 1px solid var(--border);
+  background-color: var(--bg-subtle);
+  color: var(--text-primary);
+  border-radius: var(--radius-pill);
+  padding: 0.3rem 0.75rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.vocab-chip:hover {
+  background-color: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* ---------- Settings additions ---------- */
+.segmented-group--two {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.size-toggle {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.field-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+/* ---------- Header language button & update banner ---------- */
+.lang-btn {
+  font-weight: 700;
+}
+
+.update-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  background: var(--grad-brand);
+  color: #fff;
+  font-weight: 600;
+}
+
+.update-banner[hidden] {
+  display: none;
+}
+
+.update-banner .btn--primary {
+  background: #fff;
+  color: var(--usa-navy);
+}
+
+.footer-inner p + p {
+  margin-block-start: 0.45rem;
+}
+
+.footer-disclaimer {
+  font-weight: 600;
+  color: #fff;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ---------- Print (study sheets from "All Questions") ---------- */
+@media print {
+  .site-header,
+  .site-footer,
+  .update-banner,
+  .bank-controls,
+  .bank-audio-actions,
+  .view-header .card-action-group,
+  .pill-bar,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+    color: #000;
+  }
+
+  .bank-grid {
+    display: block;
+  }
+
+  .bank-card {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #999 !important;
+    margin-block-end: 0.5rem;
+    transform: none !important;
+  }
+
+  .hero-banner,
+  .stats-grid > *,
+  .question-card {
+    animation: none !important;
+  }
+}

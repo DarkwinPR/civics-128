@@ -122,7 +122,9 @@ function mountActiveView(): void {
     renderDashboardView(mainEl, appState, {
       onNavigate: (view, opts) => {
         if (view === 'flashcards') {
-          const filter: FlashcardFilter = opts?.filterReview
+          const filter: FlashcardFilter = opts?.filterDue
+            ? 'due'
+            : opts?.filterReview
             ? 'review'
             : opts?.filter6520
               ? '65-20'

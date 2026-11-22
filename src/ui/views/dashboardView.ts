@@ -1,10 +1,25 @@
-import { CATEGORIES, CIVICS_QUESTIONS, isDynamicUnconfigured } from '../../domain/questions';
+import { appUrl } from '../../config';
+import {
+  CATEGORIES,
+  CIVICS_QUESTIONS,
+  getTestVersion,
+  isDynamicUnconfigured,
+} from '../../domain/questions';
+import { t } from '../../i18n';
 import type { AppView, PersistedState } from '../../domain/types';
-import { getQuestionProgress } from '../../services/storage';
+import {
+  getQuestionProgress,
+  getStreak,
+  getTodayCount,
+  isDueForReview,
+} from '../../services/storage';
 import { escapeHtml, ICONS } from '../dom';
 
 export interface DashboardCallbacks {
-  onNavigate: (view: AppView, options?: { filterReview?: boolean; filter6520?: boolean }) => void;
+  onNavigate: (
+    view: AppView,
+    options?: { filterReview?: boolean; filter6520?: boolean; filterDue?: boolean },
+  ) => void;
   onOpenSettings: () => void;
 }
 
@@ -34,6 +49,15 @@ export function renderDashboardView(
   }
 
   const readinessPct = Math.round((mastered / total) * 100);
+  const version = getTestVersion();
+  const streak = getStreak(state);
+  const todayCount = getTodayCount(state);
+  const goal = state.settings.dailyGoal;
+  const goalPct = Math.min(100, Math.round((todayCount / goal) * 100));
+  const dueCount = CIVICS_QUESTIONS.filter((q) =>
+    isDueForReview(getQuestionProgress(state, q.id)),
+  ).length;
+  const shareHref = `https://wa.me/?text=${encodeURIComponent(t('share.message', { url: appUrl() }))}`;
   const examsTaken = state.examHistory.length;
   const examsPassed = state.examHistory.filter((e) => e.passed).length;
 
@@ -47,9 +71,14 @@ export function renderDashboardView(
     <section class="hero-banner" aria-labelledby="main-heading">
       <div>
         <p class="hero-eyebrow"><span class="hero-stars" aria-hidden="true">★ ★ ★</span> Official USCIS 2025 Naturalization Test</p>
-        <h1 id="main-heading" tabindex="-1">Master All <span class="hero-highlight">128</span> Civics Questions in English</h1>
+        <h1 id="main-heading" tabindex="-1">Master All <span class="hero-highlight">${total}</span> Civics Questions in English</h1>
         <p class="view-lead">
-          Practice for the real oral interview: 20 questions asked, 12 correct to pass (or 6 of 10 for 65/20 applicants). Train with flashcards, realistic mock exams, and voice coaching.
+          ${
+            version === '2008'
+              ? 'You are studying the 2008 test (N-400 filed before Oct 20, 2025): 10 questions asked, 6 correct to pass.'
+              : 'Practice for the real oral interview: 20 questions asked, 12 correct to pass (or 6 of 10 for 65/20 applicants).'
+          }
+          Train with flashcards, realistic mock exams, voice coaching and English test practice.
         </p>
         <div class="hero-actions">
           <button type="button" class="btn btn--primary btn--lg" data-go="exam">
@@ -86,6 +115,39 @@ export function renderDashboardView(
     `
         : ''
     }
+
+    <section class="today-strip" aria-label="Today">
+      <div class="today-card today-card--streak">
+        <span class="today-emoji" aria-hidden="true">🔥</span>
+        <div>
+          <span class="today-value">${streak}</span>
+          <span class="today-label">${streak === 1 ? 'day streak' : 'day streak'}</span>
+        </div>
+      </div>
+      <div class="today-card today-card--goal">
+        <div class="mini-ring" style="--pct:${goalPct}" aria-hidden="true"><span>${goalPct}%</span></div>
+        <div>
+          <span class="today-value">${Math.min(todayCount, goal)} / ${goal}</span>
+          <span class="today-label">${todayCount >= goal ? 'Daily goal reached! 🎉' : 'questions today'}</span>
+        </div>
+      </div>
+      <div class="today-card today-card--due">
+        <div>
+          <span class="today-value">${dueCount}</span>
+          <span class="today-label">cards due for smart review</span>
+        </div>
+        <button type="button" class="btn ${dueCount > 0 ? 'btn--primary' : 'btn--secondary'}" id="smart-review-btn" ${dueCount === 0 ? 'disabled' : ''}>
+          Review now
+        </button>
+      </div>
+      <a class="today-card today-card--share" href="${shareHref}" target="_blank" rel="noopener noreferrer">
+        <span class="today-emoji" aria-hidden="true">💬</span>
+        <div>
+          <span class="today-label today-label--strong">${t('share.whatsapp')}</span>
+          <span class="today-label">Help a friend study too</span>
+        </div>
+      </a>
+    </section>
 
     <section class="stats-grid" aria-label="Study metrics">
       <div class="stat-card stat-card--blue">
@@ -134,7 +196,7 @@ export function renderDashboardView(
               (c) => `
             <li>
               <div class="category-row-head">
-                <strong>${escapeHtml(c.category)}</strong>
+                <strong>${escapeHtml(t(`category.${c.category}`))}</strong>
                 <span>${c.done} / ${c.total}</span>
               </div>
               <progress class="progress-track progress-track--success" max="${c.total}" value="${c.done}" aria-label="${escapeHtml(c.category)} mastery: ${c.done} of ${c.total}"></progress>
@@ -191,6 +253,10 @@ export function renderDashboardView(
 
   container.querySelector('#dashboard-open-settings')?.addEventListener('click', () => {
     callbacks.onOpenSettings();
+  });
+
+  container.querySelector('#smart-review-btn')?.addEventListener('click', () => {
+    callbacks.onNavigate('flashcards', { filterDue: true });
   });
 
   container.querySelector('#drill-review-btn')?.addEventListener('click', () => {
