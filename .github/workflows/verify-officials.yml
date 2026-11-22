@@ -1,0 +1,49 @@
+name: Monthly officials check
+
+# Opens a reminder issue on the 1st of every month so the time-sensitive
+# answers (President, Vice President, Speaker, Chief Justice, governors)
+# get checked. Senators and representatives load live from the
+# @unitedstates/congress-legislators dataset, so this job also reports the
+# current Speaker from that dataset when it is listed.
+on:
+  schedule:
+    - cron: '0 14 1 * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Look up current House leadership
+        id: lookup
+        run: |
+          curl -sSfL https://unitedstates.github.io/congress-legislators/legislators-current.json -o legislators.json || echo '[]' > legislators.json
+          SPEAKER=$(node -e "
+            const all = require('./legislators.json');
+            const s = all.find(p => (p.leadership_roles||[]).some(r => /speaker/i.test(r.title) && !r.end));
+            console.log(s ? (s.name.official_full || s.name.first + ' ' + s.name.last) : 'not listed in dataset');
+          ")
+          APP_SPEAKER=$(grep -oP "speaker: '\K[^']+" src/domain/questions.ts | head -1)
+          echo "speaker=$SPEAKER" >> "$GITHUB_OUTPUT"
+          echo "app_speaker=$APP_SPEAKER" >> "$GITHUB_OUTPUT"
+      - name: Open reminder issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create content --color FBCA04 --description "Questions, answers and translations" --force || true
+          gh issue create \
+            --title "Monthly check: time-sensitive answers ($(date +%B\ %Y))" \
+            --label content \
+            --body "Please verify these answers against https://www.uscis.gov/citizenship/testupdates:
+
+          - [ ] President, Vice President, Chief Justice (src/domain/questions.ts → DEFAULT_OFFICIALS)
+          - [ ] Speaker of the House — app: **${{ steps.lookup.outputs.app_speaker }}**, dataset: **${{ steps.lookup.outputs.speaker }}**
+          - [ ] Governors (src/domain/states.ts → GOVERNORS_VERIFIED_ON and the list). New governors usually take office in January.
+          - [ ] 2008 test answers that name officials (src/domain/questions2008.ts)
+
+          Senators and representatives load live in the app, so they do not need manual updates." || true

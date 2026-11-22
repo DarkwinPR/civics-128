@@ -1,0 +1,27 @@
+name: Report a mistake / Reportar un error
+description: A wrong or outdated answer, a translation problem, or something that does not work. / Una respuesta incorrecta o desactualizada, un problema de traducción o algo que no funciona.
+labels: ["content"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of problem? / ¿Qué tipo de problema?
+      options:
+        - Wrong or outdated answer / Respuesta incorrecta o desactualizada
+        - Official changed (senator, governor, etc.) / Cambió un funcionario
+        - Spanish translation / Traducción al español
+        - Something does not work / Algo no funciona
+        - Other / Otro
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details / Detalles
+      description: Which question (number and test 2025/2008), what is wrong, and a source if you have one (for example uscis.gov). / Qué pregunta (número y examen 2025/2008), qué está mal y una fuente si la tienes.
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Phone or browser (optional) / Celular o navegador (opcional)
