@@ -4,6 +4,7 @@ import './styles/components.css';
 import './styles/views.css';
 import './styles/vibrant.css';
 
+import { REPO_URL, reportIssueUrl } from './config';
 import { setTestVersion } from './domain/questions';
 import type { AppView, PersistedState } from './domain/types';
 import { applyStaticTranslations, getLang, onLangChange, setLang, t } from './i18n';
@@ -240,6 +241,12 @@ function applyAppearance(): void {
     );
   }
 }
+
+// Footer links
+const reportLink = document.getElementById('footer-report-link') as HTMLAnchorElement | null;
+if (reportLink) reportLink.href = reportIssueUrl();
+const codeLink = document.getElementById('footer-code-link') as HTMLAnchorElement | null;
+if (codeLink) codeLink.href = REPO_URL;
 
 // Language toggle (English <-> Spanish interface)
 const langToggleBtn = document.getElementById('lang-toggle-btn') as HTMLButtonElement | null;

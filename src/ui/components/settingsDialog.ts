@@ -3,6 +3,8 @@ import type {
   DynamicOfficialKey,
   OfficialOverrides,
   PersistedState,
+  StudySettings,
+  TestVersion,
   ThemePreference,
 } from '../../domain/types';
 import {
@@ -25,14 +27,7 @@ import { escapeHtml, ICONS } from '../dom';
 
 export interface SettingsDialogHandlers {
   getState: () => PersistedState;
-  onUpdateSettings: (patch: {
-    speechRate?: number;
-    voiceURI?: string;
-    autoSpeak?: boolean;
-    officials?: OfficialOverrides;
-    homeState?: string;
-    homeDistrict?: string;
-  }) => void;
+  onUpdateSettings: (patch: Partial<StudySettings>) => void;
   onResetProgress: () => void;
 }
 
@@ -87,7 +82,59 @@ export function renderSettingsDialogBody(
       )
       .join('');
 
+  const goalOptions = [5, 10, 15, 20, 30];
+  const sizeOptions: { value: number; label: string }[] = [
+    { value: 1, label: 'A' },
+    { value: 1.15, label: 'A+' },
+    { value: 1.3, label: 'A++' },
+  ];
+
   container.innerHTML = `
+    <section class="settings-section">
+      <h3>Your Test</h3>
+      <p class="field-hint">Which version of the civics test will you take? It depends on the date you filed your Form N-400.</p>
+      <fieldset class="segmented-group segmented-group--two" aria-label="Civics test version">
+        <div class="segmented-option">
+          <input type="radio" name="test-version" id="version-2025" value="2025" ${state.settings.testVersion === '2025' ? 'checked' : ''} />
+          <label for="version-2025">
+            <span>2025 test · 128 questions</span>
+            <span class="segmented-sub">Filed on or after Oct 20, 2025</span>
+          </label>
+        </div>
+        <div class="segmented-option">
+          <input type="radio" name="test-version" id="version-2008" value="2008" ${state.settings.testVersion === '2008' ? 'checked' : ''} />
+          <label for="version-2008">
+            <span>2008 test · 100 questions</span>
+            <span class="segmented-sub">Filed before Oct 20, 2025</span>
+          </label>
+        </div>
+      </fieldset>
+      <div class="officials-grid">
+        <div class="field">
+          <label for="daily-goal">Daily goal</label>
+          <select id="daily-goal" class="select-input">
+            ${goalOptions
+              .map(
+                (n) =>
+                  `<option value="${n}" ${state.settings.dailyGoal === n ? 'selected' : ''}>${n} questions per day</option>`,
+              )
+              .join('')}
+          </select>
+        </div>
+        <div class="field">
+          <span class="field-label" id="text-size-label">Text size</span>
+          <div class="size-toggle" role="group" aria-labelledby="text-size-label">
+            ${sizeOptions
+              .map(
+                (o) =>
+                  `<button type="button" class="pill-btn" data-font-scale="${o.value}" aria-pressed="${Math.abs(state.settings.fontScale - o.value) < 0.01}" style="font-size:${o.value}rem;">${o.label}</button>`,
+              )
+              .join('')}
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="settings-section">
       <h3>Appearance</h3>
       <fieldset class="segmented-group" aria-label="Color theme">
@@ -236,6 +283,29 @@ export function renderSettingsDialogBody(
       const pref = radio.value as ThemePreference;
       applyThemePreference(pref);
       announce(`Theme set to ${pref}.`);
+    });
+  });
+
+  // Test version, daily goal & text size
+  container.querySelectorAll<HTMLInputElement>('input[name="test-version"]').forEach((radio) => {
+    radio.addEventListener('change', () => {
+      if (!radio.checked) return;
+      handlers.onUpdateSettings({ testVersion: radio.value as TestVersion });
+      announce(`Now studying the ${radio.value} civics test.`);
+    });
+  });
+
+  const goalSelect = container.querySelector<HTMLSelectElement>('#daily-goal');
+  goalSelect?.addEventListener('change', () => {
+    handlers.onUpdateSettings({ dailyGoal: Number(goalSelect.value) });
+  });
+
+  container.querySelectorAll<HTMLButtonElement>('[data-font-scale]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      handlers.onUpdateSettings({ fontScale: Number(btn.dataset.fontScale) });
+      container.querySelectorAll<HTMLButtonElement>('[data-font-scale]').forEach((b) => {
+        b.setAttribute('aria-pressed', String(b === btn));
+      });
     });
   });
 
