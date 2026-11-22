@@ -1,0 +1,195 @@
+/* ==========================================================================
+   Design Tokens — Editorial Civic Studio
+   Follows modern-web-guidance (dark-mode, dark-mode-toggle, css-layout)
+   ========================================================================== */
+
+:root {
+  /* Raw Light Tokens */
+  --bg-page-light: #f3f6ff;
+  --bg-surface-light: #ffffff;
+  --bg-subtle-light: #ebf0fb;
+  --bg-elevated-light: #ffffff;
+  --border-light: #dbe2f2;
+  --border-strong-light: #b3bfdc;
+
+  --text-primary-light: #0f1733;
+  --text-secondary-light: #3f4a6b;
+  --text-muted-light: #5a6587;
+
+  --brand-light: #2343d1;
+  --brand-hover-light: #1a34ad;
+  --brand-soft-light: #e5ebff;
+  --brand-on-light: #ffffff;
+
+  --crimson-light: #d1123f;
+  --crimson-soft-light: #ffe6ec;
+  --crimson-on-light: #ffffff;
+
+  --success-light: #067a52;
+  --success-soft-light: #dcf7ea;
+  --success-on-light: #ffffff;
+
+  --gold-light: #9a5b00;
+  --gold-soft-light: #fff1cc;
+
+  --focus-light: #0d5bd9;
+  --shadow-sm-light: 0 1px 2px rgb(30 50 140 / 0.06), 0 4px 14px rgb(30 50 140 / 0.06);
+  --shadow-md-light: 0 14px 34px rgb(30 50 140 / 0.12), 0 3px 8px rgb(30 50 140 / 0.06);
+  --shadow-lg-light: 0 20px 44px rgb(21 28 44 / 0.16);
+  --scrollbar-track-light: #ebe8df;
+  --scrollbar-thumb-light: #7c7769;
+
+  /* Raw Dark Tokens */
+  --bg-page-dark: #0a0f24;
+  --bg-surface-dark: #121a36;
+  --bg-subtle-dark: #1a2448;
+  --bg-elevated-dark: #172045;
+  --border-dark: #27335f;
+  --border-strong-dark: #3f4f73;
+
+  --text-primary-dark: #f0f3f9;
+  --text-secondary-dark: #c0cadb;
+  --text-muted-dark: #97a5bf;
+
+  --brand-dark: #8aa8ff;
+  --brand-hover-dark: #a8cbff;
+  --brand-soft-dark: #1d2a5c;
+  --brand-on-dark: #0a1426;
+
+  --crimson-dark: #ff7d98;
+  --crimson-soft-dark: #3b1a23;
+  --crimson-on-dark: #24060b;
+
+  --success-dark: #5be09b;
+  --success-soft-dark: #123325;
+  --success-on-dark: #072115;
+
+  --gold-dark: #f5c65c;
+  --gold-soft-dark: #362a10;
+
+  --focus-dark: #7db4ff;
+  --shadow-sm-dark: 0 1px 2px rgb(0 0 0 / 0.35);
+  --shadow-md-dark: 0 10px 28px rgb(0 0 0 / 0.42);
+  --shadow-lg-dark: 0 24px 54px rgb(0 0 0 / 0.6);
+  --scrollbar-track-dark: #121826;
+  --scrollbar-thumb-dark: #5e6d8a;
+
+  /* Default (Light) fallback for browsers without light-dark() */
+  --bg-page: var(--bg-page-light);
+  --bg-surface: var(--bg-surface-light);
+  --bg-subtle: var(--bg-subtle-light);
+  --bg-elevated: var(--bg-elevated-light);
+  --border: var(--border-light);
+  --border-strong: var(--border-strong-light);
+  --text-primary: var(--text-primary-light);
+  --text-secondary: var(--text-secondary-light);
+  --text-muted: var(--text-muted-light);
+  --brand: var(--brand-light);
+  --brand-hover: var(--brand-hover-light);
+  --brand-soft: var(--brand-soft-light);
+  --brand-on: var(--brand-on-light);
+  --crimson: var(--crimson-light);
+  --crimson-soft: var(--crimson-soft-light);
+  --crimson-on: var(--crimson-on-light);
+  --success: var(--success-light);
+  --success-soft: var(--success-soft-light);
+  --success-on: var(--success-on-light);
+  --gold: var(--gold-light);
+  --gold-soft: var(--gold-soft-light);
+  --focus: var(--focus-light);
+  --shadow-sm: var(--shadow-sm-light);
+  --shadow-md: var(--shadow-md-light);
+  --shadow-lg: var(--shadow-lg-light);
+  --scrollbar-track: var(--scrollbar-track-light);
+  --scrollbar-thumb: var(--scrollbar-thumb-light);
+
+  /* Fallback dark tokens for browsers without light-dark() */
+  @media (prefers-color-scheme: dark) {
+    --bg-page: var(--bg-page-dark);
+    --bg-surface: var(--bg-surface-dark);
+    --bg-subtle: var(--bg-subtle-dark);
+    --bg-elevated: var(--bg-elevated-dark);
+    --border: var(--border-dark);
+    --border-strong: var(--border-strong-dark);
+    --text-primary: var(--text-primary-dark);
+    --text-secondary: var(--text-secondary-dark);
+    --text-muted: var(--text-muted-dark);
+    --brand: var(--brand-dark);
+    --brand-hover: var(--brand-hover-dark);
+    --brand-soft: var(--brand-soft-dark);
+    --brand-on: var(--brand-on-dark);
+    --crimson: var(--crimson-dark);
+    --crimson-soft: var(--crimson-soft-dark);
+    --crimson-on: var(--crimson-on-dark);
+    --success: var(--success-dark);
+    --success-soft: var(--success-soft-dark);
+    --success-on: var(--success-on-dark);
+    --gold: var(--gold-dark);
+    --gold-soft: var(--gold-soft-dark);
+    --focus: var(--focus-dark);
+    --shadow-sm: var(--shadow-sm-dark);
+    --shadow-md: var(--shadow-md-dark);
+    --shadow-lg: var(--shadow-lg-dark);
+    --scrollbar-track: var(--scrollbar-track-dark);
+    --scrollbar-thumb: var(--scrollbar-thumb-dark);
+  }
+
+  /* Modern adaptive tokens powered by color-scheme + light-dark() */
+  @supports (color: light-dark(white, black)) {
+    --bg-page: light-dark(var(--bg-page-light), var(--bg-page-dark));
+    --bg-surface: light-dark(var(--bg-surface-light), var(--bg-surface-dark));
+    --bg-subtle: light-dark(var(--bg-subtle-light), var(--bg-subtle-dark));
+    --bg-elevated: light-dark(var(--bg-elevated-light), var(--bg-elevated-dark));
+    --border: light-dark(var(--border-light), var(--border-dark));
+    --border-strong: light-dark(var(--border-strong-light), var(--border-strong-dark));
+    --text-primary: light-dark(var(--text-primary-light), var(--text-primary-dark));
+    --text-secondary: light-dark(var(--text-secondary-light), var(--text-secondary-dark));
+    --text-muted: light-dark(var(--text-muted-light), var(--text-muted-dark));
+    --brand: light-dark(var(--brand-light), var(--brand-dark));
+    --brand-hover: light-dark(var(--brand-hover-light), var(--brand-hover-dark));
+    --brand-soft: light-dark(var(--brand-soft-light), var(--brand-soft-dark));
+    --brand-on: light-dark(var(--brand-on-light), var(--brand-on-dark));
+    --crimson: light-dark(var(--crimson-light), var(--crimson-dark));
+    --crimson-soft: light-dark(var(--crimson-soft-light), var(--crimson-soft-dark));
+    --crimson-on: light-dark(var(--crimson-on-light), var(--crimson-on-dark));
+    --success: light-dark(var(--success-light), var(--success-dark));
+    --success-soft: light-dark(var(--success-soft-light), var(--success-soft-dark));
+    --success-on: light-dark(var(--success-on-light), var(--success-on-dark));
+    --gold: light-dark(var(--gold-light), var(--gold-dark));
+    --gold-soft: light-dark(var(--gold-soft-light), var(--gold-soft-dark));
+    --focus: light-dark(var(--focus-light), var(--focus-dark));
+    --scrollbar-track: light-dark(var(--scrollbar-track-light), var(--scrollbar-track-dark));
+    --scrollbar-thumb: light-dark(var(--scrollbar-thumb-light), var(--scrollbar-thumb-dark));
+  }
+
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  /* Spacing & Radii */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.5rem;
+  --radius-pill: 999px;
+  --max-width: 72rem;
+
+  /* Mandatory root color-scheme synced with <meta name="color-scheme"> */
+  color-scheme: light dark;
+  accent-color: var(--brand);
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+
+  &:has(> head > meta[name='color-scheme'][content='dark']) {
+    color-scheme: dark;
+    --shadow-sm: var(--shadow-sm-dark);
+    --shadow-md: var(--shadow-md-dark);
+    --shadow-lg: var(--shadow-lg-dark);
+  }
+
+  &:has(> head > meta[name='color-scheme'][content='light']) {
+    color-scheme: light;
+    --shadow-sm: var(--shadow-sm-light);
+    --shadow-md: var(--shadow-md-light);
+    --shadow-lg: var(--shadow-lg-light);
+  }
+}

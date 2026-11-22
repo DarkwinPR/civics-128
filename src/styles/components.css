@@ -1,0 +1,532 @@
+/* ==========================================================================
+   Reusable UI Primitives: Buttons, Badges, Cards, Progress & Native <dialog>
+   ========================================================================== */
+
+/* Buttons */
+.btn,
+.icon-btn,
+.pill-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  min-block-size: 2.5rem;
+  min-inline-size: 2.5rem;
+  padding: 0.55rem 1.05rem;
+  text-decoration: none;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease,
+    transform 0.1s ease;
+}
+
+.btn:disabled,
+.icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn:not(:disabled):active,
+  .icon-btn:not(:disabled):active {
+    transform: translateY(1px);
+  }
+}
+
+.btn--primary {
+  background-color: var(--brand);
+  color: var(--brand-on);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background-color: var(--brand-hover);
+}
+
+.btn--secondary {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background-color: var(--bg-subtle);
+}
+
+.btn--ghost {
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+
+.btn--ghost:hover:not(:disabled) {
+  background-color: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.btn--success {
+  background-color: var(--success);
+  color: var(--success-on);
+}
+
+.btn--success:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.btn--danger {
+  background-color: var(--crimson);
+  color: var(--crimson-on);
+}
+
+.btn--danger:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.btn--soft-danger {
+  background-color: var(--crimson-soft);
+  color: var(--crimson);
+  border-color: color-mix(in srgb, var(--crimson) 28%, transparent);
+}
+
+.btn--soft-danger:hover:not(:disabled) {
+  background-color: var(--crimson);
+  color: var(--crimson-on);
+}
+
+.btn--soft-success {
+  background-color: var(--success-soft);
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 28%, transparent);
+}
+
+.btn--soft-success:hover:not(:disabled) {
+  background-color: var(--success);
+  color: var(--success-on);
+}
+
+.btn--lg {
+  min-block-size: 2.95rem;
+  padding: 0.7rem 1.35rem;
+  font-size: 1rem;
+}
+
+.icon-btn {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: var(--border);
+  padding: 0.45rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.icon-btn:hover:not(:disabled) {
+  background-color: var(--bg-subtle);
+  border-color: var(--border-strong);
+}
+
+.icon-btn.is-speaking {
+  background-color: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* Filter Pill Controls */
+.pill-bar {
+  display: flex;
+  flex-wrap: wrap;
+  flex-wrap: balance;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.pill-btn {
+  border-radius: var(--radius-pill);
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  border-color: var(--border);
+  padding: 0.4rem 0.9rem;
+  font-size: 0.875rem;
+  min-block-size: 2.25rem;
+}
+
+.pill-btn:hover {
+  background-color: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.pill-btn[aria-pressed='true'] {
+  background-color: var(--brand-soft);
+  color: var(--brand);
+  border-color: var(--brand);
+}
+
+/* Cards & Surfaces */
+.surface-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.15rem, 2.5vw, 1.75rem);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Badges */
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.22rem 0.6rem;
+  border-radius: var(--radius-pill);
+  line-height: 1.25;
+}
+
+.badge--number {
+  font-family: var(--font-mono);
+  background-color: var(--brand-soft);
+  color: var(--brand);
+}
+
+.badge--category {
+  background-color: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+
+.badge--6520 {
+  background-color: var(--gold-soft);
+  color: var(--gold);
+}
+
+.badge--mastered {
+  background-color: var(--success-soft);
+  color: var(--success);
+}
+
+.badge--review {
+  background-color: var(--crimson-soft);
+  color: var(--crimson);
+}
+
+.badge--dynamic {
+  background-color: var(--brand-soft);
+  color: var(--brand);
+  border: 1px dashed var(--brand);
+}
+
+/* Semantic Progress Element */
+.progress-track {
+  inline-size: 100%;
+  block-size: 0.6rem;
+  border-radius: var(--radius-pill);
+  border: none;
+  background-color: var(--bg-subtle);
+  overflow: hidden;
+  appearance: none;
+}
+
+.progress-track::-webkit-progress-bar {
+  background-color: var(--bg-subtle);
+  border-radius: var(--radius-pill);
+}
+
+.progress-track::-webkit-progress-value {
+  background-color: var(--brand);
+  border-radius: var(--radius-pill);
+}
+
+.progress-track::-moz-progress-bar {
+  background-color: var(--brand);
+  border-radius: var(--radius-pill);
+}
+
+.progress-track--success::-webkit-progress-value {
+  background-color: var(--success);
+}
+
+.progress-track--success::-moz-progress-bar {
+  background-color: var(--success);
+}
+
+.progress-track--urgent::-webkit-progress-value {
+  background-color: var(--crimson);
+}
+
+.progress-track--urgent::-moz-progress-bar {
+  background-color: var(--crimson);
+}
+
+/* Form Inputs */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.field-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.text-input,
+.select-input {
+  inline-size: 100%;
+  min-block-size: 2.6rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.text-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Native Modal <dialog> — modern-web-guidance compliant
+   - Never set unconditional `display` on `dialog`; scope to `dialog[open]`
+   - Prevent background page scroll with overscroll-behavior + backdrop overflow: hidden
+   - Animate to/from top layer using @starting-style + display/overlay + separate allow-discrete
+   ========================================================================== */
+
+dialog.modal-dialog {
+  inline-size: min(40rem, calc(100% - 2rem));
+  max-block-size: min(88dvb, 48rem);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-lg);
+  margin: auto;
+
+  /* Exit / closed base state */
+  opacity: 0;
+  transition-property: opacity, transform, display, overlay;
+  transition-duration: 0.24s;
+  transition-timing-function: ease-out;
+  transition-behavior: allow-discrete;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transform: translateY(8px) scale(0.97);
+  }
+}
+
+dialog.modal-dialog--compact {
+  inline-size: min(29rem, calc(100% - 2rem));
+}
+
+dialog.modal-dialog:modal {
+  /* Mandatory scroll containment on modal dialog */
+  overscroll-behavior: contain;
+}
+
+dialog.modal-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Open state with top-layer exit fallback selector (:not([data-closing])) */
+:is(dialog.modal-dialog[open]):where(:not([data-closing])) {
+  opacity: 1;
+
+  @starting-style {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    transform: translateY(0) scale(1);
+
+    @starting-style {
+      transform: translateY(8px) scale(0.97);
+    }
+  }
+
+  &::backdrop {
+    background-color: rgb(10 15 26 / 0.56);
+
+    @starting-style {
+      background-color: rgb(10 15 26 / 0);
+    }
+  }
+}
+
+dialog.modal-dialog::backdrop {
+  /* Mandatory: ::backdrop is overflow: visible by default and ignores overscroll-behavior unless overflow: hidden is set */
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background-color: rgb(10 15 26 / 0);
+  backdrop-filter: blur(3px);
+  transition-property: background-color, display, overlay;
+  transition-duration: 0.24s;
+  transition-timing-function: ease-out;
+  transition-behavior: allow-discrete;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog.modal-dialog,
+  dialog.modal-dialog::backdrop {
+    transition-duration: 0.1s;
+  }
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.4rem;
+  border-block-end: 1px solid var(--border);
+}
+
+.dialog-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.dialog-close-btn {
+  padding: 0.4rem;
+}
+
+.dialog-body {
+  padding: 1.25rem 1.4rem;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  padding: 1rem 1.4rem;
+  border-block-start: 1px solid var(--border);
+  background-color: var(--bg-subtle);
+}
+
+/* Segmented Theme Radio Group in Settings */
+.segmented-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.segmented-option {
+  position: relative;
+}
+
+.segmented-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.segmented-option label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.2rem;
+  min-block-size: 3.1rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.segmented-option input:checked + label {
+  background-color: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.segmented-option input:focus-visible + label {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.segmented-sub {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.settings-section h3 {
+  margin: 0;
+  font-size: 0.92rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.officials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.85rem;
+}
+
+/* Callout / Notice Banner */
+.notice {
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
+  background-color: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+
+.notice--info {
+  background-color: var(--brand-soft);
+  border-color: color-mix(in srgb, var(--brand) 25%, transparent);
+  color: var(--text-primary);
+}
+
+.notice--success {
+  background-color: var(--success-soft);
+  border-color: color-mix(in srgb, var(--success) 32%, transparent);
+  color: var(--success);
+}
+
+.notice--error {
+  background-color: var(--crimson-soft);
+  border-color: color-mix(in srgb, var(--crimson) 32%, transparent);
+  color: var(--crimson);
+}
+
+.notice--gold {
+  background-color: var(--gold-soft);
+  border-color: color-mix(in srgb, var(--gold) 32%, transparent);
+  color: var(--gold);
+}

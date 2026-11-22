@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      try {
+        var savedScheme = localStorage.getItem('civics128:color-scheme');
+        if (savedScheme === 'light' || savedScheme === 'dark') {
+          document.querySelector('meta[name="color-scheme"]').content = savedScheme;
+        }
+      } catch (_e) {
+        // Storage unavailable; follow OS preference via default "light dark".
+      }
+    </script>
+    <title>Overview | U.S. Civics 128 Practice (2025)</title>
+    <meta
+      name="description"
+      content="Interactive English practice app for the official 2025 USCIS 128 Civics Questions with flashcards, official mock exam, and oral voice coaching."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <a href="#main-heading" class="skip-link visually-hidden">Skip to main content</a>
+
+    <div class="app-shell">
+      <header class="site-header">
+        <div class="header-inner">
+          <div class="brand">
+            <svg class="brand-mark" aria-hidden="true" viewBox="0 0 64 64" width="32" height="32">
+              <rect width="64" height="64" rx="14" fill="currentColor" opacity="0.12" />
+              <path
+                d="M12 46h40v4H12zM16 42V26h6v16zm13 0V26h6v16zm13 0V26h6v16zM32 12l20 10H12z"
+                fill="currentColor"
+              />
+            </svg>
+            <div class="brand-copy">
+              <span class="brand-title">Civics 128</span>
+              <span class="brand-subtitle">USCIS 2025 Edition</span>
+            </div>
+          </div>
+
+          <nav class="primary-nav" aria-label="Primary">
+            <ul class="nav-list" role="list">
+              <li>
+                <button type="button" class="nav-btn" data-view="dashboard" aria-current="page">
+                  Overview
+                </button>
+              </li>
+              <li>
+                <button type="button" class="nav-btn" data-view="flashcards">Flashcards</button>
+              </li>
+              <li>
+                <button type="button" class="nav-btn" data-view="exam">Mock Exam</button>
+              </li>
+              <li>
+                <button type="button" class="nav-btn" data-view="oral">Oral Coach</button>
+              </li>
+              <li>
+                <button type="button" class="nav-btn" data-view="bank">All 128</button>
+              </li>
+            </ul>
+          </nav>
+
+          <div class="header-actions">
+            <button
+              type="button"
+              id="open-settings-btn"
+              class="icon-btn"
+              aria-label="Open study settings and local officials"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+              <span class="btn-label">Settings</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main id="app-main" class="app-main"></main>
+
+      <footer class="site-footer">
+        <div class="footer-inner">
+          <p>
+            Official question bank based on USCIS Form M-1778 (09/25) — 2025 Naturalization Civics Test.
+            Verify time-sensitive officials at
+            <a href="https://www.uscis.gov/citizenship/testupdates" target="_blank" rel="noopener noreferrer">
+              uscis.gov/citizenship/testupdates
+            </a>.
+          </p>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Settings & Local Officials Modal Dialog -->
+    <dialog id="settings-dialog" class="modal-dialog" closedby="any" aria-labelledby="settings-dialog-title">
+      <div class="dialog-header">
+        <h2 id="settings-dialog-title">Study Settings &amp; Officials</h2>
+        <button type="button" class="icon-btn dialog-close-btn" data-close-dialog aria-label="Close settings">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div id="settings-dialog-body" class="dialog-body"></div>
+    </dialog>
+
+    <!-- Destructive Action Confirmation Dialog -->
+    <dialog id="confirm-dialog" class="modal-dialog modal-dialog--compact" aria-labelledby="confirm-dialog-title">
+      <div class="dialog-header">
+        <h2 id="confirm-dialog-title">Reset Study Progress?</h2>
+      </div>
+      <div class="dialog-body">
+        <p id="confirm-dialog-message">
+          This clears all mastered cards, review flags, and mock exam history saved in this browser. Your custom officials will remain saved.
+        </p>
+      </div>
+      <form method="dialog" class="dialog-footer">
+        <button type="submit" value="cancel" class="btn btn--secondary" autofocus>Cancel</button>
+        <button type="submit" value="confirm" class="btn btn--danger">Reset Progress</button>
+      </form>
+    </dialog>
+
+    <!-- Centralized Live Regions (always outside inert dialogs) -->
+    <div id="live-polite" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+    <div id="live-assertive" class="visually-hidden" aria-live="assertive" aria-atomic="true"></div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

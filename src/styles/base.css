@@ -1,0 +1,255 @@
+/* ==========================================================================
+   Base Reset, Landmarks, Focus Management & View Transitions
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scrollbar-gutter: stable;
+  font-family: var(--font-sans);
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  min-block-size: 100dvb;
+  font-synthesis-weight: none;
+}
+
+svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--brand);
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  color: var(--brand-hover);
+}
+
+/* High-contrast accessible focus indicator */
+:where(a:any-link, button, input, select, textarea, summary, [tabindex='-1']):focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* Visually hidden utility (preserves accessibility tree; reveals on focus for skip links) */
+.visually-hidden:where(:not(:focus-within, :active)) {
+  position: absolute !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+
+.skip-link:focus-visible {
+  position: fixed;
+  inset-block-start: 0.75rem;
+  inset-inline-start: 0.75rem;
+  z-index: 1000;
+  padding: 0.65rem 1rem;
+  background-color: var(--brand);
+  color: var(--brand-on);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+}
+
+/* Page Shell */
+.app-shell {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-block-size: 100dvb;
+}
+
+/* Header & Primary Navigation */
+.site-header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 20;
+  background-color: var(--bg-surface);
+  border-block-end: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.header-inner {
+  max-inline-size: var(--max-width);
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 3vw, 2rem);
+  padding-block: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: safe center;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--brand);
+}
+
+.brand-mark {
+  inline-size: 2.15rem;
+  block-size: 2.15rem;
+}
+
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.brand-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.brand-subtitle {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.primary-nav {
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;
+}
+
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  flex-wrap: balance;
+  gap: 0.25rem;
+  justify-content: center;
+}
+
+.nav-btn {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 0.5rem 0.9rem;
+  min-block-size: 2.5rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.nav-btn:hover {
+  background-color: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.nav-btn[aria-current='page'] {
+  background-color: var(--brand);
+  color: var(--brand-on);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Main Content Landmark */
+.app-main {
+  inline-size: 100%;
+  max-inline-size: var(--max-width);
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 3vw, 2rem);
+  padding-block: clamp(1.5rem, 3vw, 2.5rem);
+  view-transition-name: main-view;
+}
+
+/* Footer */
+.site-footer {
+  border-block-start: 1px solid var(--border);
+  background-color: var(--bg-surface);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.footer-inner {
+  max-inline-size: var(--max-width);
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 3vw, 2rem);
+  padding-block: 1.15rem;
+}
+
+.footer-inner p {
+  margin: 0;
+}
+
+/* View Transitions API */
+::view-transition-old(main-view),
+::view-transition-new(main-view) {
+  animation-duration: 0.2s;
+  animation-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* Bump touch target sizes on coarse pointers */
+@media (pointer: coarse) {
+  .nav-btn,
+  .btn,
+  .icon-btn,
+  .pill-btn {
+    min-block-size: 2.75rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .primary-nav {
+    order: 3;
+    flex-basis: 100%;
+    border-block-start: 1px solid var(--border);
+    padding-block-start: 0.65rem;
+  }
+
+  .header-actions .btn-label {
+    display: none;
+  }
+}

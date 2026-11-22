@@ -1,0 +1,670 @@
+/* ==========================================================================
+   View Layouts: Overview, Flashcards, Mock Exam, Oral Coach & All 128 Bank
+   Uses CSS Grid, Subgrid, and Container Queries
+   ========================================================================== */
+
+.view-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block-end: 1.5rem;
+}
+
+.view-header h1 {
+  margin: 0;
+  font-size: clamp(1.55rem, 3vw, 2.15rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.view-lead {
+  margin: 0.4rem 0 0;
+  color: var(--text-secondary);
+  max-inline-size: 62ch;
+}
+
+/* ==========================================================================
+   Dashboard / Overview
+   ========================================================================== */
+.hero-banner {
+  background: linear-gradient(
+    135deg,
+    var(--brand-soft) 0%,
+    var(--bg-surface) 68%
+  );
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.35rem, 3vw, 2.2rem);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.5rem;
+  align-items: center;
+  margin-block-end: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.hero-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--brand);
+  margin: 0 0 0.45rem;
+}
+
+.hero-banner h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 3.2vw, 2.3rem);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-block-start: 1.15rem;
+}
+
+.readiness-ring {
+  inline-size: 8.5rem;
+  block-size: 8.5rem;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--brand) calc(var(--pct, 0) * 1%),
+    var(--bg-subtle) 0
+  );
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.readiness-ring-inner {
+  inline-size: 6.7rem;
+  block-size: 6.7rem;
+  border-radius: 50%;
+  background-color: var(--bg-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.readiness-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.readiness-caption {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Metrics Grid with Subgrid alignment */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+  margin-block-end: 1.5rem;
+}
+
+.stat-card {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 0.45rem;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.15rem 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.stat-number {
+  font-size: 1.85rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-sub {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+}
+
+.dashboard-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+  gap: 1.25rem;
+}
+
+.category-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.category-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-block-end: 0.35rem;
+  font-size: 0.92rem;
+}
+
+.category-row-head strong {
+  font-weight: 700;
+}
+
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-subtle);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 680px) {
+  .hero-banner {
+    grid-template-columns: 1fr;
+  }
+
+  .readiness-ring {
+    margin-inline: auto;
+  }
+}
+
+/* ==========================================================================
+   Study Stage Container (Flashcards, Mock Exam, Oral Coach)
+   Uses CSS Container Queries for responsive component layout
+   ========================================================================== */
+.study-stage-wrapper {
+  container: study-stage / inline-size;
+  max-inline-size: 52rem;
+  margin-inline: auto;
+}
+
+.study-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-block-end: 1rem;
+}
+
+.question-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.25rem, 3.5cqi, 2.25rem);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.question-card-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.question-section-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.question-stem {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(1.35rem, 3.6cqi, 1.95rem);
+  line-height: 1.3;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.answer-panel {
+  border-block-start: 1px solid var(--border);
+  padding-block-start: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.answer-panel-title {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.answer-list {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 1.05rem;
+}
+
+.answer-list li.is-matched {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.answer-hidden-box {
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 1.4rem;
+  text-align: center;
+  background-color: var(--bg-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.answer-hidden-box p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.94rem;
+}
+
+.countdown-panel {
+  inline-size: min(24rem, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.countdown-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.countdown-seconds {
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--brand);
+}
+
+.countdown-seconds.is-urgent {
+  color: var(--crimson);
+}
+
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-block-start: 0.5rem;
+  border-block-start: 1px solid var(--border);
+}
+
+.card-action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.kbd-hint {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1.25rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-block-start: 1rem;
+  justify-content: center;
+}
+
+kbd {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  padding: 0.12rem 0.42rem;
+  border-radius: 0.3rem;
+  border: 1px solid var(--border-strong);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   Mock Exam & Oral Voice Simulator
+   ========================================================================== */
+.exam-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr));
+  gap: 1.15rem;
+}
+
+.mode-option-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 0.85rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.mode-option-card h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.mode-option-card p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.rule-list {
+  margin: 0;
+  padding-inline-start: 1.2rem;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.exam-hud {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-block-end: 1rem;
+}
+
+.hud-pill {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.hud-pill-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.hud-pill-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-pill--pass .hud-pill-value {
+  color: var(--success);
+}
+
+.hud-pill--miss .hud-pill-value {
+  color: var(--crimson);
+}
+
+/* Voice / Typed Response Box */
+.response-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border);
+}
+
+.voice-controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.mic-btn {
+  position: relative;
+}
+
+.mic-btn.is-listening {
+  background-color: var(--crimson);
+  color: var(--crimson-on);
+  border-color: var(--crimson);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mic-btn.is-listening {
+    animation: mic-pulse 1.3s ease-in-out infinite;
+  }
+}
+
+@keyframes mic-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(166 28 49 / 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgb(166 28 49 / 0);
+  }
+}
+
+.typed-answer-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.typed-answer-form .text-input {
+  flex: 1 1 15rem;
+  min-inline-size: 0;
+}
+
+.transcript-box {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.9rem;
+  font-size: 0.96rem;
+}
+
+.transcript-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  display: block;
+  margin-block-end: 0.25rem;
+}
+
+/* Exam Result Summary */
+.result-banner {
+  border-radius: var(--radius-lg);
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-block-end: 1.5rem;
+}
+
+.result-banner--passed {
+  background-color: var(--success-soft);
+  border: 2px solid var(--success);
+}
+
+.result-banner--failed {
+  background-color: var(--crimson-soft);
+  border: 2px solid var(--crimson);
+}
+
+.result-banner h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.review-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.review-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-inline-start-width: 4px;
+  border-radius: var(--radius-md);
+  padding: 1rem 1.2rem;
+}
+
+.review-card--correct {
+  border-inline-start-color: var(--success);
+}
+
+.review-card--wrong {
+  border-inline-start-color: var(--crimson);
+}
+
+/* ==========================================================================
+   All 128 Reference Bank (Grid + Subgrid)
+   ========================================================================== */
+.bank-controls {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) auto;
+  gap: 0.85rem 1rem;
+  align-items: end;
+  margin-block-end: 1.25rem;
+}
+
+@media (max-width: 720px) {
+  .bank-controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bank-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(21rem, 100%), 1fr));
+  grid-auto-rows: auto;
+  gap: 1rem;
+}
+
+.bank-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.bank-card-question {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.06rem;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.bank-card-answers {
+  margin: 0;
+  padding-inline-start: 1.15rem;
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bank-card-footer {
+  margin-block-start: auto;
+  padding-block-start: 0.7rem;
+  border-block-start: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.bank-audio-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.bank-audio-btn {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.82rem;
+  min-block-size: 2.25rem;
+}
+
+@container study-stage (inline-size < 500px) {
+  .exam-hud {
+    grid-template-columns: 1fr;
+  }
+
+  .card-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .card-action-group {
+    justify-content: space-between;
+  }
+}
