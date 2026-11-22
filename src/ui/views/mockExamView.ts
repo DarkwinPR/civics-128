@@ -5,7 +5,14 @@ import {
   submitExamAnswer,
   type ExamSessionState,
 } from '../../domain/examEngine';
-import { CIVICS_QUESTIONS, getEffectiveAnswers, displayNumber } from '../../domain/questions';
+import { appUrl } from '../../config';
+import {
+  CIVICS_QUESTIONS,
+  displayNumber,
+  getEffectiveAnswers,
+  getTestVersion,
+} from '../../domain/questions';
+import { t } from '../../i18n';
 import type { AnswerMatchResult, ExamMode, ExamRecord, PersistedState } from '../../domain/types';
 import {
   isSpeechRecognitionSupported,
@@ -171,6 +178,7 @@ export function mountMockExamView(
         targetPass: session.rules.passThreshold,
         maxQuestions: session.rules.maxQuestions,
         missedIds: session.results.filter((r) => !r.correct).map((r) => r.questionId),
+        version: getTestVersion(),
       };
       callbacks.onCompleteExam(record);
       render();
@@ -285,6 +293,13 @@ export function mountMockExamView(
                   : ''
               }
               <button type="button" id="exam-change-mode-btn" class="btn btn--ghost">Change Mode</button>
+              ${
+                passed
+                  ? `<a class="btn btn--success" target="_blank" rel="noopener noreferrer" href="https://wa.me/?text=${encodeURIComponent(
+                      t('share.passedMessage', { score: `${tallies.correct}/${tallies.answered}`, url: appUrl() }),
+                    )}">💬 ${escapeHtml(t('share.whatsapp'))}</a>`
+                  : ''
+              }
             </div>
           </section>
 

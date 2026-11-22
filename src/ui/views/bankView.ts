@@ -1,4 +1,10 @@
-import { CATEGORIES, CIVICS_QUESTIONS, getEffectiveAnswers, displayNumber } from '../../domain/questions';
+import {
+  CATEGORIES,
+  CIVICS_QUESTIONS,
+  displayNumber,
+  getEffectiveAnswers,
+  getTestVersion,
+} from '../../domain/questions';
 import type { CivicsCategory, MasteryStatus, PersistedState } from '../../domain/types';
 import { getQuestionProgress } from '../../services/storage';
 import { isSpeechSynthesisSupported, speakText, stopSpeaking } from '../../services/speech';
@@ -198,10 +204,17 @@ export function mountBankView(container: HTMLElement, callbacks: BankCallbacks):
   container.innerHTML = `
     <div class="view-header">
       <div>
-        <h1 id="main-heading" tabindex="-1">All 128 Official Questions</h1>
-        <p class="view-lead">Complete USCIS 2025 (Form M-1778) question bank with search, category filters, audio playback, and status tracking.</p>
+        <h1 id="main-heading" tabindex="-1">All ${CIVICS_QUESTIONS.length} Official Questions</h1>
+        <p class="view-lead">${
+          getTestVersion() === '2008'
+            ? 'Complete USCIS 2008 civics question bank (100 questions) with search, category filters, audio playback, and status tracking.'
+            : 'Complete USCIS 2025 (Form M-1778) question bank with search, category filters, audio playback, and status tracking.'
+        }</p>
       </div>
-      <span id="bank-results-count" style="font-size:0.88rem;color:var(--text-muted);font-weight:600;"></span>
+      <div class="card-action-group">
+        <span id="bank-results-count" style="font-size:0.88rem;color:var(--text-muted);font-weight:600;"></span>
+        <button type="button" id="bank-print-btn" class="btn btn--secondary">🖨️ Print study sheet</button>
+      </div>
     </div>
 
     <div class="bank-controls">
@@ -239,6 +252,10 @@ export function mountBankView(container: HTMLElement, callbacks: BankCallbacks):
   `;
 
   const searchInput = container.querySelector<HTMLInputElement>('#bank-search');
+  container.querySelector('#bank-print-btn')?.addEventListener('click', () => {
+    window.print();
+  });
+
   searchInput?.addEventListener('input', () => {
     query = searchInput.value;
     renderGrid();
