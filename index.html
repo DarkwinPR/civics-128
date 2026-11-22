@@ -14,21 +14,24 @@
         // Storage unavailable; follow OS preference via default "light dark".
       }
     </script>
-    <title>Overview | U.S. Civics 128 Practice (2025)</title>
+    <title>U.S. Citizenship Test Practice | Civics 128</title>
     <meta
       name="description"
-      content="Interactive English practice app for the official 2025 USCIS 128 Civics Questions with flashcards, official mock exam, and oral voice coaching."
+      content="Free practice for the U.S. citizenship test: the official 2025 (128) and 2008 (100) civics questions, English reading and writing, N-400 interview practice, flashcards and mock exams. Interface in English and Spanish."
     />
+    <meta name="theme-color" content="#2343d1" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   </head>
   <body>
-    <a href="#main-heading" class="skip-link visually-hidden">Skip to main content</a>
+    <a href="#main-heading" class="skip-link visually-hidden" data-i18n="nav.skip">Skip to main content</a>
 
     <div class="app-shell">
       <header class="site-header">
@@ -43,59 +46,75 @@
             </svg>
             <div class="brand-copy">
               <span class="brand-title">Civics 128</span>
-              <span class="brand-subtitle">USCIS 2025 Edition</span>
+              <span class="brand-subtitle" id="brand-subtitle">USCIS 2025 Test</span>
             </div>
           </div>
 
-          <nav class="primary-nav" aria-label="Primary">
+          <nav class="primary-nav" aria-label="Primary" data-i18n-aria="nav.primary">
             <ul class="nav-list" role="list">
               <li>
-                <button type="button" class="nav-btn" data-view="dashboard" aria-current="page">
-                  Overview
-                </button>
+                <button type="button" class="nav-btn" data-view="dashboard" aria-current="page" data-i18n="nav.dashboard">Overview</button>
               </li>
               <li>
-                <button type="button" class="nav-btn" data-view="flashcards">Flashcards</button>
+                <button type="button" class="nav-btn" data-view="flashcards" data-i18n="nav.flashcards">Flashcards</button>
               </li>
               <li>
-                <button type="button" class="nav-btn" data-view="exam">Mock Exam</button>
+                <button type="button" class="nav-btn" data-view="exam" data-i18n="nav.exam">Mock Exam</button>
               </li>
               <li>
-                <button type="button" class="nav-btn" data-view="oral">Oral Coach</button>
+                <button type="button" class="nav-btn" data-view="oral" data-i18n="nav.oral">Oral Coach</button>
               </li>
               <li>
-                <button type="button" class="nav-btn" data-view="bank">All 128</button>
+                <button type="button" class="nav-btn" data-view="english" data-i18n="nav.english">English Test</button>
+              </li>
+              <li>
+                <button type="button" class="nav-btn" data-view="bank" data-i18n="nav.bank">All Questions</button>
               </li>
             </ul>
           </nav>
 
           <div class="header-actions">
+            <button type="button" id="lang-toggle-btn" class="icon-btn lang-btn" data-i18n-aria="header.langToggleAria" aria-label="Cambiar el idioma a español">
+              <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span class="btn-label" data-i18n="header.langToggle">Español</span>
+            </button>
             <button
               type="button"
               id="open-settings-btn"
               class="icon-btn"
               aria-label="Open study settings and local officials"
+              data-i18n-aria="header.settingsAria"
             >
               <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3" />
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
               </svg>
-              <span class="btn-label">Settings</span>
+              <span class="btn-label" data-i18n="header.settings">Settings</span>
             </button>
           </div>
         </div>
       </header>
 
+      <div id="update-banner" class="update-banner" role="status" hidden>
+        <span data-i18n="update.ready">A new version of the app is ready.</span>
+        <button type="button" id="update-banner-btn" class="btn btn--primary" data-i18n="update.reload">Update now</button>
+      </div>
+
       <main id="app-main" class="app-main"></main>
 
       <footer class="site-footer">
         <div class="footer-inner">
+          <p class="footer-disclaimer" data-i18n="footer.disclaimer">
+            Free, independent study tool. Not affiliated with or endorsed by USCIS or the U.S. government, and not legal advice.
+          </p>
           <p>
-            Official question bank based on USCIS Form M-1778 (09/25) — 2025 Naturalization Civics Test.
-            Verify time-sensitive officials at
-            <a href="https://www.uscis.gov/citizenship/testupdates" target="_blank" rel="noopener noreferrer">
-              uscis.gov/citizenship/testupdates
-            </a>.
+            <span data-i18n="footer.source">Always verify time-sensitive answers at</span>
+            <a href="https://www.uscis.gov/citizenship/testupdates" target="_blank" rel="noopener noreferrer">uscis.gov/citizenship/testupdates</a>.
+          </p>
+          <p class="footer-links">
+            <a id="footer-report-link" href="#" target="_blank" rel="noopener noreferrer" data-i18n="footer.report">Report a mistake</a>
+            <span aria-hidden="true">·</span>
+            <a id="footer-code-link" href="#" target="_blank" rel="noopener noreferrer" data-i18n="footer.code">Open-source code</a>
           </p>
         </div>
       </footer>
@@ -104,8 +123,8 @@
     <!-- Settings & Local Officials Modal Dialog -->
     <dialog id="settings-dialog" class="modal-dialog" closedby="any" aria-labelledby="settings-dialog-title">
       <div class="dialog-header">
-        <h2 id="settings-dialog-title">Study Settings &amp; Officials</h2>
-        <button type="button" class="icon-btn dialog-close-btn" data-close-dialog aria-label="Close settings">
+        <h2 id="settings-dialog-title" data-i18n="dialog.settingsTitle">Study Settings &amp; Officials</h2>
+        <button type="button" class="icon-btn dialog-close-btn" data-close-dialog aria-label="Close settings" data-i18n-aria="dialog.closeSettings">
           <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
@@ -125,7 +144,7 @@
         </p>
       </div>
       <form method="dialog" class="dialog-footer">
-        <button type="submit" value="cancel" class="btn btn--secondary" autofocus>Cancel</button>
+        <button type="submit" value="cancel" class="btn btn--secondary" autofocus data-i18n="dialog.cancel">Cancel</button>
         <button type="submit" value="confirm" class="btn btn--danger">Reset Progress</button>
       </form>
     </dialog>
