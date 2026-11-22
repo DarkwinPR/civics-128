@@ -6,6 +6,9 @@ export function registerServiceWorker(onUpdateReady: (apply: () => void) => void
   if (!import.meta.env.PROD || !('serviceWorker' in navigator)) return;
 
   window.addEventListener('load', () => {
+    // On a first visit the new worker claims the page; that is not an update,
+    // so only reload when a previous worker was already in control.
+    const hadController = Boolean(navigator.serviceWorker.controller);
     navigator.serviceWorker
       .register('./sw.js')
       .then((registration) => {
@@ -26,7 +29,7 @@ export function registerServiceWorker(onUpdateReady: (apply: () => void) => void
 
         let reloading = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (reloading) return;
+          if (reloading || !hadController) return;
           reloading = true;
           window.location.reload();
         });
