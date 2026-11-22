@@ -758,3 +758,19 @@ export const N400_INTERVIEW: InterviewSection[] = [
     ],
   },
 ];
+
+export interface HelpfulPhrase {
+  text: string;
+  es: string;
+}
+
+// Polite phrases applicants may use with the officer when they need help.
+export const HELPFUL_PHRASES: HelpfulPhrase[] = [
+  { text: 'Could you please repeat the question?', es: '¿Podría repetir la pregunta, por favor?' },
+  { text: 'Could you speak more slowly, please?', es: '¿Podría hablar más despacio, por favor?' },
+  { text: 'I am sorry, I do not understand. Could you say it in a different way?', es: 'Perdón, no entiendo. ¿Podría decirlo de otra manera?' },
+  { text: 'What does that word mean?', es: '¿Qué significa esa palabra?' },
+  { text: 'Let me think for a moment, please.', es: 'Déjeme pensar un momento, por favor.' },
+  { text: 'I am a little nervous.', es: 'Estoy un poco nervioso / nerviosa.' },
+  { text: 'Good morning. Thank you for your time.', es: 'Buenos días. Gracias por su tiempo.' },
+];

@@ -6,6 +6,17 @@
  */
 export const GOVERNORS_VERIFIED_ON = 'November 2026';
 
+/**
+ * Governors elected in November 2026 are sworn in during January 2027. From this
+ * date the app asks users to confirm their governor until the list is re-verified
+ * (update GOVERNORS_VERIFIED_ON and this date together).
+ */
+export const GOVERNORS_RECHECK_FROM = '2027-01-01';
+
+export function governorsMayHaveChanged(now = new Date()): boolean {
+  return now.getTime() >= new Date(`${GOVERNORS_RECHECK_FROM}T00:00:00`).getTime();
+}
+
 export type JurisdictionKind = 'state' | 'district' | 'territory';
 
 export interface Jurisdiction {

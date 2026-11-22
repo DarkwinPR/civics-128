@@ -15,8 +15,10 @@ import { isSpeechSynthesisSupported } from './services/speech';
 import {
   addExamRecord,
   loadState,
+  recordEnglishAttempt,
   recordPracticeResult,
   resetProgressOnly,
+  restoreBackup,
   setQuestionStatus,
   updateSettings,
 } from './services/storage';
@@ -67,6 +69,13 @@ function refreshSettingsModal(): void {
         setTestVersion(appState.settings.testVersion);
         flashcardsState = createInitialFlashcardsState(appState, 'all');
       }
+      applyAppearance();
+      renderCurrentView(false);
+    },
+    onImportBackup: (state) => {
+      appState = restoreBackup(state);
+      setTestVersion(appState.settings.testVersion);
+      flashcardsState = createInitialFlashcardsState(appState, 'all');
       applyAppearance();
       renderCurrentView(false);
     },
@@ -171,6 +180,9 @@ function mountActiveView(): void {
   if (currentView === 'english') {
     cleanupCurrentView = mountEnglishTestView(mainEl, {
       getState: () => appState,
+      onRecordAttempt: (part, id, passed) => {
+        appState = recordEnglishAttempt(appState, part, id, passed);
+      },
     });
     return;
   }

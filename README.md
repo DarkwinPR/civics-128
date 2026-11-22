@@ -24,13 +24,15 @@ celular, se puede instalar como app y funciona sin internet. Interfaz en **espa√
 - **Flashcards** with audio, auto-reveal timer and **smart review** (spaced repetition).
 - **Mock exam** that follows the official rules and stops early on pass/fail.
 - **Oral coach**: the "officer" reads the question aloud and you answer with your voice.
-- **English test**: reading aloud with speech recognition, dictation for writing, official
-  vocabulary lists and **N-400 interview questions** with Spanish help.
+- **English test**: reading aloud with speech recognition and word-by-word feedback, dictation
+  with hints and word-by-word audio, official vocabulary, **N-400 interview questions** you can
+  answer by voice, helpful phrases for the officer, encouraging feedback and saved progress.
 - **Your state, auto-filled**: pick your state and district to get your current senators,
   representative, governor and capital.
 - **"Ver en espa√±ol"** translation helper for every question (answers stay in English).
 - Daily goal, streak, larger text option, dark mode, print study sheets, share on WhatsApp.
-- **Private**: no account, no ads, no tracking. Progress is saved only in your browser.
+- **Private**: no account, no ads, no tracking. Progress is saved only in your browser, and you
+  can save a backup file to move it to another phone.
 
 ## Development
 
