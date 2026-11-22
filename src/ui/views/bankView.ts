@@ -8,6 +8,7 @@ import {
 import type { CivicsCategory, MasteryStatus, PersistedState } from '../../domain/types';
 import { getQuestionProgress } from '../../services/storage';
 import { isSpeechSynthesisSupported, speakText, stopSpeaking } from '../../services/speech';
+import { t } from '../../i18n';
 import { announce } from '../announcer';
 import { escapeHtml, ICONS } from '../dom';
 
@@ -57,13 +58,16 @@ export function mountBankView(container: HTMLElement, callbacks: BankCallbacks):
     });
 
     if (countEl) {
-      countEl.textContent = `Showing ${filtered.length} of ${CIVICS_QUESTIONS.length} official questions`;
+      countEl.textContent = t('bank.resultsCount', {
+        shown: filtered.length,
+        total: CIVICS_QUESTIONS.length,
+      });
     }
 
     if (filtered.length === 0) {
       gridEl.innerHTML = `
         <div class="surface-card" style="grid-column:1 / -1;text-align:center;padding:2rem;">
-          <p style="margin:0;color:var(--text-secondary);">No questions match your search and filters.</p>
+          <p style="margin:0;color:var(--text-secondary);">${escapeHtml(t('bank.noResults'))}</p>
         </div>
       `;
       return;
@@ -78,10 +82,10 @@ export function mountBankView(container: HTMLElement, callbacks: BankCallbacks):
         const isSpeakingAnswers =
           speakingTarget?.id === q.id && speakingTarget.kind === 'answers';
         return `
-          <article class="bank-card" aria-label="Question ${q.id}">
+          <article class="bank-card" aria-label="${escapeHtml(t('bank.cardAria', { id: q.id }))}">
             <div class="badge-row">
               <span class="badge badge--number">Q${displayNumber(q)}</span>
-              <span class="badge badge--category">${escapeHtml(q.category)}</span>
+              <span class="badge badge--category">${escapeHtml(t(`category.${q.category}`))}</span>
               ${q.is6520 ? `<span class="badge badge--6520">★ 65/20</span>` : ''}
             </div>
 
@@ -98,14 +102,14 @@ export function mountBankView(container: HTMLElement, callbacks: BankCallbacks):
                 type="button"
                 class="pill-btn"
                 data-status-id="${q.id}"
-                aria-label="Question ${q.id} status: ${progress.status}. Activate to change."
+                aria-label="${escapeHtml(t('bank.statusAria', { id: q.id, status: t(`bank.statusWord.${progress.status}`) }))}"
               >
                 ${
                   progress.status === 'mastered'
-                    ? '✓ Mastered'
+                    ? `✓ ${escapeHtml(t('badge.mastered'))}`
                     : progress.status === 'review'
-                      ? '● Needs Review'
-                      : '○ Unseen'
+                      ? `● ${escapeHtml(t('badge.review'))}`
+                      : `○ ${escapeHtml(t('bank.unseen'))}`
                 }
               </button>
 
@@ -118,20 +122,20 @@ export function mountBankView(container: HTMLElement, callbacks: BankCallbacks):
                     class="icon-btn bank-audio-btn ${isSpeakingQuestion ? 'is-speaking' : ''}"
                     data-speak-id="${q.id}"
                     data-speak-kind="question"
-                    aria-label="${isSpeakingQuestion ? `Stop reading question ${q.id}` : `Question: listen to question ${q.id}`}"
+                    aria-label="${escapeHtml(isSpeakingQuestion ? t('bank.stopQuestionAria', { id: q.id }) : t('bank.listenQuestionAria', { id: q.id }))}"
                   >
                     ${isSpeakingQuestion ? ICONS.stop : ICONS.volume}
-                    <span>${isSpeakingQuestion ? 'Stop' : 'Question'}</span>
+                    <span>${escapeHtml(isSpeakingQuestion ? t('bank.stop') : t('bank.question'))}</span>
                   </button>
                   <button
                     type="button"
                     class="icon-btn bank-audio-btn ${isSpeakingAnswers ? 'is-speaking' : ''}"
                     data-speak-id="${q.id}"
                     data-speak-kind="answers"
-                    aria-label="${isSpeakingAnswers ? `Stop reading answers for question ${q.id}` : `Answers: listen to answers for question ${q.id}`}"
+                    aria-label="${escapeHtml(isSpeakingAnswers ? t('bank.stopAnswersAria', { id: q.id }) : t('bank.listenAnswersAria', { id: q.id }))}"
                   >
                     ${isSpeakingAnswers ? ICONS.stop : ICONS.volume}
-                    <span>${isSpeakingAnswers ? 'Stop' : 'Answers'}</span>
+                    <span>${escapeHtml(isSpeakingAnswers ? t('bank.stop') : t('bank.answers'))}</span>
                   </button>
                 </div>
               `
@@ -149,7 +153,7 @@ export function mountBankView(container: HTMLElement, callbacks: BankCallbacks):
         const current = getQuestionProgress(callbacks.getState(), id).status;
         const next = cycleStatus(current);
         callbacks.onSetStatus(id, next);
-        announce(`Question ${id} marked as ${next}.`);
+        announce(t('bank.statusAnnounce', { id, status: t(`bank.statusWord.${next}`) }));
         renderGrid();
       });
     });
@@ -204,47 +208,47 @@ export function mountBankView(container: HTMLElement, callbacks: BankCallbacks):
   container.innerHTML = `
     <div class="view-header">
       <div>
-        <h1 id="main-heading" tabindex="-1">All ${CIVICS_QUESTIONS.length} Official Questions</h1>
+        <h1 id="main-heading" tabindex="-1">${escapeHtml(t('bank.title', { total: CIVICS_QUESTIONS.length }))}</h1>
         <p class="view-lead">${
           getTestVersion() === '2008'
-            ? 'Complete USCIS 2008 civics question bank (100 questions) with search, category filters, audio playback, and status tracking.'
-            : 'Complete USCIS 2025 (Form M-1778) question bank with search, category filters, audio playback, and status tracking.'
+            ? escapeHtml(t('bank.lead2008'))
+            : escapeHtml(t('bank.lead2025'))
         }</p>
       </div>
       <div class="card-action-group">
         <span id="bank-results-count" style="font-size:0.88rem;color:var(--text-muted);font-weight:600;"></span>
-        <button type="button" id="bank-print-btn" class="btn btn--secondary">🖨️ Print study sheet</button>
+        <button type="button" id="bank-print-btn" class="btn btn--secondary">${escapeHtml(t('bank.print'))}</button>
       </div>
     </div>
 
     <div class="bank-controls">
       <div class="field">
-        <label for="bank-search">Search by number, keyword, or answer</label>
+        <label for="bank-search">${escapeHtml(t('bank.searchLabel'))}</label>
         <input
           id="bank-search"
           type="search"
           class="text-input"
-          placeholder="e.g. Constitution, 1776, Lincoln, Q38…"
+          placeholder="${escapeHtml(t('bank.searchPlaceholder'))}"
         />
       </div>
 
       <div class="field">
-        <label for="bank-status-filter">Progress Status</label>
+        <label for="bank-status-filter">${escapeHtml(t('bank.statusLabel'))}</label>
         <select id="bank-status-filter" class="select-input">
-          <option value="all">All Statuses</option>
-          <option value="unseen">Unseen</option>
-          <option value="review">Needs Review</option>
-          <option value="mastered">Mastered</option>
+          <option value="all">${escapeHtml(t('bank.allStatuses'))}</option>
+          <option value="unseen">${escapeHtml(t('bank.unseen'))}</option>
+          <option value="review">${escapeHtml(t('badge.review'))}</option>
+          <option value="mastered">${escapeHtml(t('badge.mastered'))}</option>
         </select>
       </div>
     </div>
 
-    <div class="pill-bar" role="group" aria-label="Category filter" style="margin-block-end:1.25rem;">
-      <button type="button" class="pill-btn" data-cat="all" aria-pressed="true">All (128)</button>
-      <button type="button" class="pill-btn" data-cat="65-20" aria-pressed="false">65/20 ★ (20)</button>
+    <div class="pill-bar" role="group" aria-label="${escapeHtml(t('bank.categoryFilter'))}" style="margin-block-end:1.25rem;">
+      <button type="button" class="pill-btn" data-cat="all" aria-pressed="true">${escapeHtml(t('bank.allCount'))}</button>
+      <button type="button" class="pill-btn" data-cat="65-20" aria-pressed="false">${escapeHtml(t('bank.count6520'))}</button>
       ${CATEGORIES.map(
         (cat) =>
-          `<button type="button" class="pill-btn" data-cat="${escapeHtml(cat)}" aria-pressed="false">${escapeHtml(cat)}</button>`,
+          `<button type="button" class="pill-btn" data-cat="${escapeHtml(cat)}" aria-pressed="false">${escapeHtml(t(`category.${cat}`))}</button>`,
       ).join('')}
     </div>
 
