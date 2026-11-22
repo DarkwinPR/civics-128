@@ -1,4 +1,4 @@
-import { DEFAULT_OFFICIALS, OFFICIAL_LABELS } from '../../domain/questions';
+import { DEFAULT_OFFICIALS } from '../../domain/questions';
 import type {
   DynamicOfficialKey,
   OfficialOverrides,
@@ -23,6 +23,7 @@ import {
 } from '../../services/speech';
 import { applyThemePreference, getStoredTheme, getSystemTheme } from '../../services/theme';
 import { announce } from '../announcer';
+import { t } from '../../i18n';
 import { escapeHtml, ICONS } from '../dom';
 
 export interface SettingsDialogHandlers {
@@ -56,19 +57,23 @@ export function renderSettingsDialogBody(
     'stateCapital',
   ];
 
+  const officialPlaceholder = (key: DynamicOfficialKey): string =>
+    federalKeys.includes(key)
+      ? t('settings.officialPlaceholder.example', { name: DEFAULT_OFFICIALS[key] })
+      : t(`settings.officialPlaceholder.${key}`);
+
   const renderOfficialField = (key: DynamicOfficialKey): string => {
-    const meta = OFFICIAL_LABELS[key];
     const value = state.settings.officials[key];
     return `
       <div class="field">
-        <label for="official-${key}">${escapeHtml(meta.label)}</label>
+        <label for="official-${key}">${escapeHtml(t(`settings.official.${key}`))}</label>
         <input
           id="official-${key}"
           name="${key}"
           type="text"
           class="text-input"
           value="${escapeHtml(value)}"
-          placeholder="${escapeHtml(meta.placeholder)}"
+          placeholder="${escapeHtml(officialPlaceholder(key))}"
         />
       </div>
     `;
@@ -91,38 +96,38 @@ export function renderSettingsDialogBody(
 
   container.innerHTML = `
     <section class="settings-section">
-      <h3>Your Test</h3>
-      <p class="field-hint">Which version of the civics test will you take? It depends on the date you filed your Form N-400.</p>
-      <fieldset class="segmented-group segmented-group--two" aria-label="Civics test version">
+      <h3>${escapeHtml(t('settings.yourTest'))}</h3>
+      <p class="field-hint">${escapeHtml(t('settings.versionHint'))}</p>
+      <fieldset class="segmented-group segmented-group--two" aria-label="${escapeHtml(t('settings.versionAria'))}">
         <div class="segmented-option">
           <input type="radio" name="test-version" id="version-2025" value="2025" ${state.settings.testVersion === '2025' ? 'checked' : ''} />
           <label for="version-2025">
-            <span>2025 test · 128 questions</span>
-            <span class="segmented-sub">Filed on or after Oct 20, 2025</span>
+            <span>${escapeHtml(t('settings.version2025'))}</span>
+            <span class="segmented-sub">${escapeHtml(t('settings.version2025Sub'))}</span>
           </label>
         </div>
         <div class="segmented-option">
           <input type="radio" name="test-version" id="version-2008" value="2008" ${state.settings.testVersion === '2008' ? 'checked' : ''} />
           <label for="version-2008">
-            <span>2008 test · 100 questions</span>
-            <span class="segmented-sub">Filed before Oct 20, 2025</span>
+            <span>${escapeHtml(t('settings.version2008'))}</span>
+            <span class="segmented-sub">${escapeHtml(t('settings.version2008Sub'))}</span>
           </label>
         </div>
       </fieldset>
       <div class="officials-grid">
         <div class="field">
-          <label for="daily-goal">Daily goal</label>
+          <label for="daily-goal">${escapeHtml(t('settings.dailyGoal'))}</label>
           <select id="daily-goal" class="select-input">
             ${goalOptions
               .map(
                 (n) =>
-                  `<option value="${n}" ${state.settings.dailyGoal === n ? 'selected' : ''}>${n} questions per day</option>`,
+                  `<option value="${n}" ${state.settings.dailyGoal === n ? 'selected' : ''}>${escapeHtml(t('settings.goalOption', { n }))}</option>`,
               )
               .join('')}
           </select>
         </div>
         <div class="field">
-          <span class="field-label" id="text-size-label">Text size</span>
+          <span class="field-label" id="text-size-label">${escapeHtml(t('settings.textSize'))}</span>
           <div class="size-toggle" role="group" aria-labelledby="text-size-label">
             ${sizeOptions
               .map(
@@ -136,42 +141,42 @@ export function renderSettingsDialogBody(
     </section>
 
     <section class="settings-section">
-      <h3>Appearance</h3>
-      <fieldset class="segmented-group" aria-label="Color theme">
+      <h3>${escapeHtml(t('settings.appearance'))}</h3>
+      <fieldset class="segmented-group" aria-label="${escapeHtml(t('settings.themeAria'))}">
         <div class="segmented-option">
           <input type="radio" name="theme" id="theme-system" value="system" ${currentTheme === 'system' ? 'checked' : ''} />
           <label for="theme-system">
-            <span>System</span>
-            <span class="segmented-sub">Currently ${systemTheme}</span>
+            <span>${escapeHtml(t('settings.themeSystem'))}</span>
+            <span class="segmented-sub">${escapeHtml(t('settings.themeCurrently', { theme: t(`settings.themeName.${systemTheme}`) }))}</span>
           </label>
         </div>
         <div class="segmented-option">
           <input type="radio" name="theme" id="theme-light" value="light" ${currentTheme === 'light' ? 'checked' : ''} />
           <label for="theme-light">
-            <span>Light</span>
-            <span class="segmented-sub">Paper light</span>
+            <span>${escapeHtml(t('settings.themeLight'))}</span>
+            <span class="segmented-sub">${escapeHtml(t('settings.themeLightSub'))}</span>
           </label>
         </div>
         <div class="segmented-option">
           <input type="radio" name="theme" id="theme-dark" value="dark" ${currentTheme === 'dark' ? 'checked' : ''} />
           <label for="theme-dark">
-            <span>Dark</span>
-            <span class="segmented-sub">Deep navy</span>
+            <span>${escapeHtml(t('settings.themeDark'))}</span>
+            <span class="segmented-sub">${escapeHtml(t('settings.themeDarkSub'))}</span>
           </label>
         </div>
       </fieldset>
     </section>
 
     <section class="settings-section">
-      <h3>Officer Voice &amp; Audio</h3>
+      <h3>${escapeHtml(t('settings.voiceTitle'))}</h3>
       ${
         ttsSupported
           ? `
         <div class="officials-grid">
           <div class="field">
-            <label for="voice-select">English Voice</label>
+            <label for="voice-select">${escapeHtml(t('settings.voiceLabel'))}</label>
             <select id="voice-select" class="select-input">
-              <option value="">Default U.S. English Voice</option>
+              <option value="">${escapeHtml(t('settings.voiceDefault'))}</option>
               ${voices
                 .map(
                   (v) => `
@@ -184,7 +189,7 @@ export function renderSettingsDialogBody(
             </select>
           </div>
           <div class="field">
-            <label for="speech-rate">Speaking Speed: <strong id="speech-rate-val">${state.settings.speechRate.toFixed(2)}x</strong></label>
+            <label for="speech-rate">${escapeHtml(t('settings.speechRate'))} <strong id="speech-rate-val">${state.settings.speechRate.toFixed(2)}x</strong></label>
             <input
               id="speech-rate"
               type="range"
@@ -198,24 +203,24 @@ export function renderSettingsDialogBody(
         <div class="voice-controls-row">
           <label style="display:inline-flex;align-items:center;gap:0.5rem;font-size:0.9rem;cursor:pointer;">
             <input id="auto-speak-toggle" type="checkbox" ${state.settings.autoSpeak ? 'checked' : ''} />
-            Auto-read questions aloud in Flashcards &amp; Mock Exam
+            ${escapeHtml(t('settings.autoSpeak'))}
           </label>
           <button type="button" id="test-voice-btn" class="btn btn--secondary" style="margin-inline-start:auto;">
-            ${ICONS.volume} Test Voice
+            ${ICONS.volume} ${escapeHtml(t('settings.testVoice'))}
           </button>
         </div>
       `
-          : `<p class="notice">Text-to-Speech is not supported in this browser.</p>`
+          : `<p class="notice">${escapeHtml(t('settings.noTts'))}</p>`
       }
     </section>
 
     <form id="officials-form" class="settings-section">
-      <h3>Your Current Officials (Time-Sensitive &amp; State Answers)</h3>
+      <h3>${escapeHtml(t('settings.officialsTitle'))}</h3>
       <p class="field-hint">
-        Governors last verified ${GOVERNORS_VERIFIED_ON}; senators and representatives load live from the official list of current members of Congress.
-        Customize these answers to match your state and current officeholders at
-        <a href="https://www.uscis.gov/citizenship/testupdates" target="_blank" rel="noopener noreferrer">uscis.gov/citizenship/testupdates</a>.
-        Separate multiple acceptable names with commas (for example, both of your state's U.S. senators).
+        ${escapeHtml(t('settings.officialsHint', { date: GOVERNORS_VERIFIED_ON, link: '{link}' })).replace(
+          '{link}',
+          '<a href="https://www.uscis.gov/citizenship/testupdates" target="_blank" rel="noopener noreferrer">uscis.gov/citizenship/testupdates</a>',
+        )}
       </p>
       <div class="officials-grid">
         ${federalKeys.map(renderOfficialField).join('')}
@@ -224,31 +229,31 @@ export function renderSettingsDialogBody(
         <div class="state-picker-head">
           <span class="state-picker-icon" aria-hidden="true">${ICONS.flag}</span>
           <div>
-            <strong>Auto-fill your state answers</strong>
-            <p class="field-hint">Pick your state and we fill in your senators, governor and capital with current data.</p>
+            <strong>${escapeHtml(t('settings.autofillTitle'))}</strong>
+            <p class="field-hint">${escapeHtml(t('settings.autofillHint'))}</p>
           </div>
         </div>
         <div class="officials-grid">
           <div class="field">
-            <label for="home-state">Your state or territory</label>
+            <label for="home-state">${escapeHtml(t('settings.homeState'))}</label>
             <select id="home-state" class="select-input">
-              <option value="">Choose your state…</option>
-              <optgroup label="States">
+              <option value="">${escapeHtml(t('settings.chooseState'))}</option>
+              <optgroup label="${escapeHtml(t('settings.optStates'))}">
                 ${renderPlaceOptions('state')}
               </optgroup>
-              <optgroup label="D.C. &amp; Territories">
+              <optgroup label="${escapeHtml(t('settings.optOther'))}">
                 ${renderPlaceOptions('other')}
               </optgroup>
             </select>
           </div>
           <div class="field">
-            <label for="home-district">Congressional district</label>
+            <label for="home-district">${escapeHtml(t('settings.district'))}</label>
             <select id="home-district" class="select-input" disabled>
-              <option value="">Choose your state first</option>
+              <option value="">${escapeHtml(t('settings.chooseStateFirst'))}</option>
             </select>
             <p class="field-hint">
-              Don't know it?
-              <a href="https://www.house.gov/representatives/find-your-representative" target="_blank" rel="noopener noreferrer">Find your district by ZIP code</a>.
+              ${escapeHtml(t('settings.dontKnowDistrict'))}
+              <a href="https://www.house.gov/representatives/find-your-representative" target="_blank" rel="noopener noreferrer">${escapeHtml(t('settings.findDistrict'))}</a>.
             </p>
           </div>
         </div>
@@ -258,19 +263,19 @@ export function renderSettingsDialogBody(
         ${stateKeys.map(renderOfficialField).join('')}
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:0.6rem;justify-content:space-between;align-items:center;">
-        <button type="button" id="restore-federal-btn" class="btn btn--ghost">Restore Default Federal Officials</button>
-        <button type="submit" class="btn btn--primary">Save Officials</button>
+        <button type="button" id="restore-federal-btn" class="btn btn--ghost">${escapeHtml(t('settings.restoreFederal'))}</button>
+        <button type="submit" class="btn btn--primary">${escapeHtml(t('settings.saveOfficials'))}</button>
       </div>
     </form>
 
     <section class="settings-section" style="border-block-start:1px solid var(--border);padding-block-start:1rem;">
-      <h3>Study Data</h3>
+      <h3>${escapeHtml(t('settings.studyData'))}</h3>
       <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.75rem;">
         <p class="field-hint" style="max-inline-size:34ch;">
-          All study progress is stored locally in your browser. Nothing is sent to a server.
+          ${escapeHtml(t('settings.studyDataHint'))}
         </p>
         <button type="button" id="reset-progress-btn" class="btn btn--soft-danger">
-          Reset Study Progress
+          ${escapeHtml(t('settings.resetProgress'))}
         </button>
       </div>
     </section>
@@ -282,7 +287,7 @@ export function renderSettingsDialogBody(
       if (!radio.checked) return;
       const pref = radio.value as ThemePreference;
       applyThemePreference(pref);
-      announce(`Theme set to ${pref}.`);
+      announce(t('settings.announceTheme', { theme: t(`settings.themeName.${pref}`) }));
     });
   });
 
@@ -291,7 +296,7 @@ export function renderSettingsDialogBody(
     radio.addEventListener('change', () => {
       if (!radio.checked) return;
       handlers.onUpdateSettings({ testVersion: radio.value as TestVersion });
-      announce(`Now studying the ${radio.value} civics test.`);
+      announce(t('settings.announceVersion', { version: radio.value }));
     });
   });
 
@@ -360,7 +365,7 @@ export function renderSettingsDialogBody(
 
   const resetDistrictSelect = () => {
     if (!homeDistrictSelect) return;
-    homeDistrictSelect.innerHTML = '<option value="">Choose your state first</option>';
+    homeDistrictSelect.innerHTML = `<option value="">${escapeHtml(t('settings.chooseStateFirst'))}</option>`;
     homeDistrictSelect.disabled = true;
   };
 
@@ -377,7 +382,7 @@ export function renderSettingsDialogBody(
       setOfficialInput('governor', place.governor);
       setOfficialInput('stateCapital', place.capital);
     }
-    setStatus('Loading current members of Congress…');
+    setStatus(t('settings.statusLoading'));
 
     try {
       const index = await loadCongressIndex();
@@ -387,7 +392,7 @@ export function renderSettingsDialogBody(
 
       if (homeDistrictSelect) {
         districtNames = new Map(reps.map((r) => [String(r.district), r.name]));
-        const placeholder = reps.length > 1 ? '<option value="">Choose your district…</option>' : '';
+        const placeholder = reps.length > 1 ? `<option value="">${escapeHtml(t('settings.chooseDistrict'))}</option>` : '';
         homeDistrictSelect.innerHTML =
           placeholder +
           reps
@@ -405,7 +410,7 @@ export function renderSettingsDialogBody(
       }
 
       if (!fill) {
-        setStatus(`Current data for ${place.name} is ready. Change the state or district to refill.`);
+        setStatus(t('settings.statusReady', { place: place.name }));
         return;
       }
 
@@ -418,16 +423,16 @@ export function renderSettingsDialogBody(
       const needsDistrict = reps.length > 1 && !homeDistrictSelect?.value;
       setStatus(
         needsDistrict
-          ? `✓ Senators, governor and capital filled for ${place.name}. Now choose your district to get your Representative, then click Save Officials.`
-          : `✓ All state answers filled for ${place.name}. Click Save Officials to keep them.`,
+          ? t('settings.statusNeedsDistrict', { place: place.name })
+          : t('settings.statusAllFilled', { place: place.name }),
         'ok',
       );
     } catch {
       if (token !== lookupToken) return;
       setStatus(
         fill
-          ? 'Governor and capital filled, but the live Congress list could not load (are you offline?). Type your senators and representative manually.'
-          : 'Could not load the live Congress list right now.',
+          ? t('settings.statusOfflineFill')
+          : t('settings.statusOffline'),
         'error',
       );
     }
@@ -440,7 +445,7 @@ export function renderSettingsDialogBody(
   homeDistrictSelect?.addEventListener('change', () => {
     const name = districtNames.get(homeDistrictSelect.value) ?? '';
     setOfficialInput('representative', name);
-    if (name) setStatus(`✓ Representative set to ${name}. Click Save Officials to keep it.`, 'ok');
+    if (name) setStatus(t('settings.statusRepSet', { name }), 'ok');
   });
 
   if (state.settings.homeState) {
@@ -467,7 +472,7 @@ export function renderSettingsDialogBody(
       homeState: homeStateSelect?.value ?? '',
       homeDistrict: homeDistrictSelect?.value ?? '',
     });
-    announce('Saved custom official answers.');
+    announce(t('settings.announceSaved'));
     void closeDialogSmoothly(dialog);
   });
 
@@ -478,7 +483,7 @@ export function renderSettingsDialogBody(
         const input = container.querySelector<HTMLInputElement>(`#official-${key}`);
         if (input) input.value = DEFAULT_OFFICIALS[key];
       }
-      announce('Restored default federal officials. Click Save Officials to keep changes.');
+      announce(t('settings.announceRestored'));
     });
 
   // Reset study progress
@@ -487,14 +492,13 @@ export function renderSettingsDialogBody(
     ?.addEventListener('click', async () => {
       stopSpeaking();
       const confirmed = await openConfirmDialog(confirmDialog, {
-        title: 'Reset Study Progress?',
-        message:
-          'This clears all mastered cards, review flags, and mock exam history saved in this browser. Your custom officials will remain saved.',
-        confirmLabel: 'Reset Progress',
+        title: t('dialog.resetTitle'),
+        message: t('dialog.resetMessage'),
+        confirmLabel: t('dialog.resetConfirm'),
       });
       if (confirmed) {
         handlers.onResetProgress();
-        announce('Study progress has been reset.');
+        announce(t('settings.announceReset'));
         void closeDialogSmoothly(dialog);
       }
     });

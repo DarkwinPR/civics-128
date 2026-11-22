@@ -1,6 +1,7 @@
 import { evaluateAnswer } from '../../domain/answerMatcher';
 import {
   createExamSession,
+  getExamRules,
   getExamTallies,
   submitExamAnswer,
   type ExamSessionState,
@@ -24,6 +25,7 @@ import {
 } from '../../services/speech';
 import { announce } from '../announcer';
 import { escapeHtml, ICONS } from '../dom';
+import { renderTranslationToggle } from '../translation';
 import { launchConfetti } from '../confetti';
 
 export interface MockExamCallbacks {
@@ -48,6 +50,7 @@ export function mountMockExamView(
   let speaking = false;
   let micError = '';
   let activeMic: ListeningSession | null = null;
+  let showTranslation = false;
 
   const stopAudio = () => {
     stopSpeaking();
@@ -64,16 +67,22 @@ export function mountMockExamView(
     evaluated = null;
     revealedManually = false;
     micError = '';
+    showTranslation = false;
     render();
 
     const firstQ = session.queue[0];
     if (firstQ && callbacks.getState().settings.autoSpeak) {
       readQuestion(firstQ.question);
     }
+    const startParams = {
+      year: getTestVersion(),
+      max: session.rules.maxQuestions,
+      pass: session.rules.passThreshold,
+    };
     announce(
       mode === '65-20'
-        ? 'Started 65/20 mock exam. Up to 10 questions; 6 correct to pass.'
-        : 'Started standard 2025 mock exam. Up to 20 questions; 12 correct to pass.',
+        ? t('exam.announceStart6520', startParams)
+        : t('exam.announceStartStandard', startParams),
     );
   };
 
@@ -116,7 +125,7 @@ export function mountMockExamView(
       onStart: () => {
         listening = true;
         render();
-        announce('Listening. Speak your answer in English.');
+        announce(t('exam.announceListening'));
       },
       onInterim: (transcript) => {
         userResponse = transcript;
@@ -164,6 +173,7 @@ export function mountMockExamView(
     evaluated = null;
     revealedManually = false;
     micError = '';
+    showTranslation = false;
 
     if (session.status !== 'in-progress') {
       const tallies = getExamTallies(session);
@@ -185,8 +195,8 @@ export function mountMockExamView(
       if (record.passed) launchConfetti();
       announce(
         record.passed
-          ? `Congratulations! You passed the mock exam with ${record.correct} correct answers.`
-          : `Mock exam ended. You answered ${record.correct} correctly out of ${record.asked}.`,
+          ? t('exam.announcePassed', { correct: record.correct })
+          : t('exam.announceEnded', { correct: record.correct, asked: record.asked }),
       );
       return;
     }
@@ -203,13 +213,18 @@ export function mountMockExamView(
 
     // 1. Setup screen
     if (!session) {
+      const year = getTestVersion();
+      const standardRules = getExamRules('standard');
+      const rules6520 = getExamRules('65-20');
+      const total = CIVICS_QUESTIONS.length;
+      const starred = CIVICS_QUESTIONS.filter((q) => q.is6520).length;
       container.innerHTML = `
         <div class="study-stage-wrapper">
           <div class="view-header">
             <div>
-              <h1 id="main-heading" tabindex="-1">Official 2025 Mock Exam</h1>
+              <h1 id="main-heading" tabindex="-1">${escapeHtml(t('exam.setupTitle', { year }))}</h1>
               <p class="view-lead">
-                Simulates the real USCIS oral interview rules, including automatic early termination once you pass or can no longer pass.
+                ${escapeHtml(t('exam.setupLead'))}
               </p>
             </div>
           </div>
@@ -217,37 +232,37 @@ export function mountMockExamView(
           <div class="exam-mode-grid">
             <article class="mode-option-card">
               <div class="badge-row">
-                <span class="badge badge--number">Standard 2025</span>
-                <span class="badge badge--category">128 Questions</span>
+                <span class="badge badge--number">${escapeHtml(t('exam.standardBadge', { year }))}</span>
+                <span class="badge badge--category">${escapeHtml(t('exam.questionCount', { n: total }))}</span>
               </div>
-              <h2>Standard Naturalization Exam</h2>
-              <p>For applicants filing Form N-400 on or after October 20, 2025.</p>
+              <h2>${escapeHtml(t('exam.standardTitle'))}</h2>
+              <p>${escapeHtml(t(year === '2008' ? 'exam.standardWho2008' : 'exam.standardWho2025'))}</p>
               <ul class="rule-list">
-                <li>Up to <strong>20 questions</strong> selected at random from all 128</li>
-                <li>Stops immediately at <strong>12 correct</strong> (PASS)</li>
-                <li>Stops immediately at <strong>9 incorrect</strong> (FAIL)</li>
-                <li>Answer by voice, typing, or self-grading aloud</li>
+                <li>${t('exam.ruleStandardAsked', { max: standardRules.maxQuestions, total })}</li>
+                <li>${t('exam.rulePass', { n: standardRules.passThreshold })}</li>
+                <li>${t('exam.ruleFail', { n: standardRules.failThreshold })}</li>
+                <li>${escapeHtml(t('exam.ruleAnswerWays'))}</li>
               </ul>
               <button type="button" id="start-standard-btn" class="btn btn--primary btn--lg">
-                Start Standard Exam (20 Questions)
+                ${escapeHtml(t('exam.startStandard', { n: standardRules.maxQuestions }))}
               </button>
             </article>
 
             <article class="mode-option-card">
               <div class="badge-row">
-                <span class="badge badge--6520">★ 65/20 Exemption</span>
-                <span class="badge badge--category">20 Starred Questions</span>
+                <span class="badge badge--6520">${escapeHtml(t('exam.6520Badge'))}</span>
+                <span class="badge badge--category">${escapeHtml(t('exam.starredCount', { n: starred }))}</span>
               </div>
-              <h2>65/20 Special Consideration</h2>
-              <p>For applicants age 65+ who have been permanent residents for 20+ years.</p>
+              <h2>${escapeHtml(t('exam.6520Title'))}</h2>
+              <p>${escapeHtml(t('exam.6520Who'))}</p>
               <ul class="rule-list">
-                <li>Up to <strong>10 questions</strong> from the 20 official ★ questions</li>
-                <li>Stops immediately at <strong>6 correct</strong> (PASS)</li>
-                <li>Stops immediately at <strong>5 incorrect</strong> (FAIL)</li>
-                <li>Great quick drill even for standard applicants</li>
+                <li>${t('exam.rule6520Asked', { max: rules6520.maxQuestions, starred })}</li>
+                <li>${t('exam.rulePass', { n: rules6520.passThreshold })}</li>
+                <li>${t('exam.ruleFail', { n: rules6520.failThreshold })}</li>
+                <li>${escapeHtml(t('exam.rule6520Drill'))}</li>
               </ul>
               <button type="button" id="start-6520-btn" class="btn btn--secondary btn--lg">
-                Start 65/20 Exam (10 Questions)
+                ${escapeHtml(t('exam.start6520', { n: rules6520.maxQuestions }))}
               </button>
             </article>
           </div>
@@ -272,27 +287,32 @@ export function mountMockExamView(
 
       container.innerHTML = `
         <div class="study-stage-wrapper">
-          <h1 id="main-heading" tabindex="-1" class="visually-hidden">Mock Exam Results</h1>
+          <h1 id="main-heading" tabindex="-1" class="visually-hidden">${escapeHtml(t('exam.resultsHeading'))}</h1>
 
-          <section class="result-banner ${passed ? 'result-banner--passed' : 'result-banner--failed'}" aria-label="Exam outcome">
+          <section class="result-banner ${passed ? 'result-banner--passed' : 'result-banner--failed'}" aria-label="${escapeHtml(t('exam.outcomeAria'))}">
             <span class="badge ${passed ? 'badge--mastered' : 'badge--review'}">
-              ${session.rules.mode === '65-20' ? '65/20 Special Consideration ★' : 'Standard 2025 Civics Test'}
+              ${escapeHtml(session.rules.mode === '65-20' ? t('exam.result6520Badge') : t('exam.resultStandardBadge', { year: getTestVersion() }))}
             </span>
-            <h2>${passed ? 'You Passed the Mock Exam!' : 'Keep Practicing — Not Passed Yet'}</h2>
+            <h2>${escapeHtml(passed ? t('exam.passedTitle') : t('exam.failedTitle'))}</h2>
             <p style="margin:0;max-inline-size:48ch;color:var(--text-primary);">
-              You answered <strong>${tallies.correct} correctly</strong> and <strong>${tallies.incorrect} incorrectly</strong> out of <strong>${tallies.answered}</strong> questions asked
-              (official passing score: ${session.rules.passThreshold}/${session.rules.maxQuestions}).
+              ${t('exam.resultSummary', {
+                correct: tallies.correct,
+                incorrect: tallies.incorrect,
+                asked: tallies.answered,
+                pass: session.rules.passThreshold,
+                max: session.rules.maxQuestions,
+              })}
             </p>
             <div class="hero-actions" style="justify-content:center;">
               <button type="button" id="exam-retake-btn" class="btn btn--primary">
-                ${ICONS.rotate} Take Another Exam
+                ${ICONS.rotate} ${escapeHtml(t('exam.retake'))}
               </button>
               ${
                 missedCount > 0
-                  ? `<button type="button" id="exam-review-missed-btn" class="btn btn--secondary">Practice Flagged Cards (${missedCount})</button>`
+                  ? `<button type="button" id="exam-review-missed-btn" class="btn btn--secondary">${escapeHtml(t('exam.practiceFlagged', { n: missedCount }))}</button>`
                   : ''
               }
-              <button type="button" id="exam-change-mode-btn" class="btn btn--ghost">Change Mode</button>
+              <button type="button" id="exam-change-mode-btn" class="btn btn--ghost">${escapeHtml(t('exam.changeMode'))}</button>
               ${
                 passed
                   ? `<a class="btn btn--success" target="_blank" rel="noopener noreferrer" href="https://wa.me/?text=${encodeURIComponent(
@@ -303,7 +323,7 @@ export function mountMockExamView(
             </div>
           </section>
 
-          <h3 style="margin:0 0 0.85rem;">Question-by-Question Review</h3>
+          <h3 style="margin:0 0 0.85rem;">${escapeHtml(t('exam.reviewHeading'))}</h3>
           <ul class="review-list" role="list">
             ${session.results
               .map((res, idx) => {
@@ -313,20 +333,20 @@ export function mountMockExamView(
                 return `
                   <li class="review-card ${res.correct ? 'review-card--correct' : 'review-card--wrong'}">
                     <div class="badge-row" style="margin-block-end:0.45rem;">
-                      <span class="badge badge--number">#${idx + 1} · Q${displayNumber(q)}</span>
+                      <span class="badge badge--number">#${idx + 1} · ${escapeHtml(t('exam.qNumber', { n: displayNumber(q) }))}</span>
                       <span class="badge ${res.correct ? 'badge--mastered' : 'badge--review'}">
-                        ${res.correct ? 'Correct' : 'Missed'}
+                        ${escapeHtml(res.correct ? t('exam.correct') : t('exam.missed'))}
                       </span>
                     </div>
                     <p style="margin:0 0 0.45rem;font-weight:700;">${escapeHtml(q.question)}</p>
                     ${
                       res.userAnswer
-                        ? `<p style="margin:0 0 0.45rem;font-size:0.88rem;color:var(--text-secondary);">Your answer: <em>"${escapeHtml(res.userAnswer)}"</em></p>`
+                        ? `<p style="margin:0 0 0.45rem;font-size:0.88rem;color:var(--text-secondary);">${escapeHtml(t('exam.yourAnswer'))} <em>"${escapeHtml(res.userAnswer)}"</em></p>`
                         : ''
                     }
                     <ul class="bank-card-answers">
                       ${answers.slice(0, 5).map((a) => `<li>${escapeHtml(a)}</li>`).join('')}
-                      ${answers.length > 5 ? `<li><em>…and ${answers.length - 5} more accepted answers</em></li>` : ''}
+                      ${answers.length > 5 ? `<li><em>${escapeHtml(t('exam.moreAnswers', { n: answers.length - 5 }))}</em></li>` : ''}
                     </ul>
                   </li>
                 `;
@@ -359,22 +379,22 @@ export function mountMockExamView(
       <div class="study-stage-wrapper">
         <div class="study-toolbar">
           <h1 id="main-heading" tabindex="-1" style="margin:0;font-size:1.35rem;">
-            ${session.rules.mode === '65-20' ? '65/20 Mock Exam ★' : 'Standard 2025 Mock Exam'}
+            ${escapeHtml(session.rules.mode === '65-20' ? t('exam.active6520Title') : t('exam.activeStandardTitle', { year: getTestVersion() }))}
           </h1>
-          <button type="button" id="exam-quit-btn" class="btn btn--ghost">Exit Exam</button>
+          <button type="button" id="exam-quit-btn" class="btn btn--ghost">${escapeHtml(t('exam.exit'))}</button>
         </div>
 
-        <div class="exam-hud" aria-label="Exam score">
+        <div class="exam-hud" aria-label="${escapeHtml(t('exam.scoreAria'))}">
           <div class="hud-pill">
-            <span class="hud-pill-label">Question</span>
+            <span class="hud-pill-label">${escapeHtml(t('exam.hudQuestion'))}</span>
             <span class="hud-pill-value">${tallies.answered + 1} / ${session.rules.maxQuestions}</span>
           </div>
           <div class="hud-pill hud-pill--pass">
-            <span class="hud-pill-label">Correct (Pass at ${session.rules.passThreshold})</span>
+            <span class="hud-pill-label">${escapeHtml(t('exam.hudCorrect', { n: session.rules.passThreshold }))}</span>
             <span class="hud-pill-value">${tallies.correct}</span>
           </div>
           <div class="hud-pill hud-pill--miss">
-            <span class="hud-pill-label">Incorrect (Stop at ${session.rules.failThreshold})</span>
+            <span class="hud-pill-label">${escapeHtml(t('exam.hudIncorrect', { n: session.rules.failThreshold }))}</span>
             <span class="hud-pill-value">${tallies.incorrect}</span>
           </div>
         </div>
@@ -384,14 +404,14 @@ export function mountMockExamView(
           style="margin-block-end:1.15rem;"
           max="${session.rules.passThreshold}"
           value="${tallies.correct}"
-          aria-label="${tallies.correct} of ${session.rules.passThreshold} correct answers needed to pass"
+          aria-label="${escapeHtml(t('exam.progressAria', { correct: tallies.correct, pass: session.rules.passThreshold }))}"
         ></progress>
 
         <article class="question-card">
           <div class="question-card-top">
             <div class="badge-row">
-              <span class="badge badge--number">Q${displayNumber(question)}</span>
-              <span class="badge badge--category">${escapeHtml(question.category)}</span>
+              <span class="badge badge--number">${escapeHtml(t('exam.qNumber', { n: displayNumber(question) }))}</span>
+              <span class="badge badge--category">${escapeHtml(t(`category.${question.category}`))}</span>
               ${question.is6520 ? `<span class="badge badge--6520">★ 65/20</span>` : ''}
             </div>
             ${
@@ -401,10 +421,10 @@ export function mountMockExamView(
                 type="button"
                 id="exam-speak-btn"
                 class="icon-btn ${speaking ? 'is-speaking' : ''}"
-                aria-label="${speaking ? 'Stop officer voice' : 'Hear officer ask question'}"
+                aria-label="${escapeHtml(speaking ? t('exam.stopVoiceAria') : t('exam.hearVoiceAria'))}"
               >
                 ${speaking ? ICONS.stop : ICONS.volume}
-                <span>${speaking ? 'Stop' : 'Officer Voice'}</span>
+                <span>${escapeHtml(speaking ? t('exam.stop') : t('exam.officerVoice'))}</span>
               </button>
             `
                 : ''
@@ -413,9 +433,11 @@ export function mountMockExamView(
 
           <h2 class="question-stem">${escapeHtml(question.question)}</h2>
 
+          ${renderTranslationToggle(question, showTranslation, false)}
+
           ${
             question.requiredCount > 1
-              ? `<p class="notice notice--info" style="margin:0;">Give <strong>${question.requiredCount}</strong> distinct answers.</p>`
+              ? `<p class="notice notice--info" style="margin:0;">${t('exam.giveAnswers', { n: question.requiredCount })}</p>`
               : ''
           }
 
@@ -429,34 +451,34 @@ export function mountMockExamView(
                   id="exam-mic-btn"
                   class="btn ${listening ? 'btn--danger is-listening' : 'btn--primary'} mic-btn"
                 >
-                  ${ICONS.mic} ${listening ? 'Listening… Tap to Stop' : 'Speak Answer'}
+                  ${ICONS.mic} ${escapeHtml(listening ? t('exam.listening') : t('exam.speakAnswer'))}
                 </button>
               `
-                  : `<span class="field-hint">Voice input unavailable in this browser — type your answer or reveal to self-grade.</span>`
+                  : `<span class="field-hint">${escapeHtml(t('exam.noMic'))}</span>`
               }
               <button type="button" id="exam-reveal-btn" class="btn btn--secondary" style="margin-inline-start:auto;">
-                Reveal Official Answers
+                ${escapeHtml(t('exam.reveal'))}
               </button>
             </div>
 
             ${
               listening
-                ? `<div class="transcript-box"><span class="transcript-label">Live Transcript</span><span id="exam-live-transcript">${escapeHtml(userResponse || 'Speak now…')}</span></div>`
+                ? `<div class="transcript-box"><span class="transcript-label">${escapeHtml(t('exam.liveTranscript'))}</span><span id="exam-live-transcript">${escapeHtml(userResponse || t('exam.speakNow'))}</span></div>`
                 : ''
             }
 
             ${micError ? `<p class="notice notice--error" style="margin:0;">${escapeHtml(micError)}</p>` : ''}
 
             <form id="exam-answer-form" class="typed-answer-form">
-              <label for="exam-answer-input" class="visually-hidden">Type your answer in English</label>
+              <label for="exam-answer-input" class="visually-hidden">${escapeHtml(t('exam.typeLabel'))}</label>
               <input
                 id="exam-answer-input"
                 type="text"
                 class="text-input"
                 value="${escapeHtml(userResponse)}"
-                placeholder="Or type your answer in English and press Check…"
+                placeholder="${escapeHtml(t('exam.typePlaceholder'))}"
               />
-              <button type="submit" class="btn btn--secondary">Check Answer</button>
+              <button type="submit" class="btn btn--secondary">${escapeHtml(t('exam.check'))}</button>
             </form>
           </div>
 
@@ -469,7 +491,7 @@ export function mountMockExamView(
                   ? `<p class="notice ${evaluated.isMatch ? 'notice--success' : 'notice--info'}" style="margin:0;">${escapeHtml(evaluated.feedback)}</p>`
                   : ''
               }
-              <h3 class="answer-panel-title">Official USCIS Accepted Answers</h3>
+              <h3 class="answer-panel-title">${escapeHtml(t('exam.officialAnswers'))}</h3>
               <ul class="answer-list">
                 ${effectiveAnswers
                   .map((ans) => {
@@ -481,13 +503,13 @@ export function mountMockExamView(
               ${question.note ? `<p class="notice" style="margin:0;">${escapeHtml(question.note)}</p>` : ''}
 
               <div class="card-actions">
-                <span style="font-size:0.88rem;color:var(--text-secondary);">Confirm your grade to continue:</span>
+                <span style="font-size:0.88rem;color:var(--text-secondary);">${escapeHtml(t('exam.confirmGrade'))}</span>
                 <div class="card-action-group">
                   <button type="button" id="exam-grade-wrong" class="btn btn--soft-danger">
-                    Mark Missed
+                    ${escapeHtml(t('exam.markMissed'))}
                   </button>
                   <button type="button" id="exam-grade-correct" class="btn btn--success">
-                    ${ICONS.check} Mark Correct
+                    ${ICONS.check} ${escapeHtml(t('exam.markCorrect'))}
                   </button>
                 </div>
               </div>
@@ -511,10 +533,17 @@ export function mountMockExamView(
 
     container.querySelector('#exam-mic-btn')?.addEventListener('click', toggleMic);
 
+    container
+      .querySelector('[data-action="toggle-translation"]')
+      ?.addEventListener('click', () => {
+        showTranslation = !showTranslation;
+        render();
+      });
+
     container.querySelector('#exam-reveal-btn')?.addEventListener('click', () => {
       revealedManually = true;
       render();
-      announce('Official answers revealed. Mark whether your response was correct or missed.');
+      announce(t('exam.announceRevealed'));
     });
 
     const inputEl = container.querySelector<HTMLInputElement>('#exam-answer-input');
