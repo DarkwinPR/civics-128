@@ -244,8 +244,8 @@ export function mountBankView(container: HTMLElement, callbacks: BankCallbacks):
     </div>
 
     <div class="pill-bar" role="group" aria-label="${escapeHtml(t('bank.categoryFilter'))}" style="margin-block-end:1.25rem;">
-      <button type="button" class="pill-btn" data-cat="all" aria-pressed="true">${escapeHtml(t('bank.allCount'))}</button>
-      <button type="button" class="pill-btn" data-cat="65-20" aria-pressed="false">${escapeHtml(t('bank.count6520'))}</button>
+      <button type="button" class="pill-btn" data-cat="all" aria-pressed="true">${escapeHtml(t('bank.allCount', { n: CIVICS_QUESTIONS.length }))}</button>
+      <button type="button" class="pill-btn" data-cat="65-20" aria-pressed="false">${escapeHtml(t('bank.count6520', { n: CIVICS_QUESTIONS.filter((q) => q.is6520).length }))}</button>
       ${CATEGORIES.map(
         (cat) =>
           `<button type="button" class="pill-btn" data-cat="${escapeHtml(cat)}" aria-pressed="false">${escapeHtml(t(`category.${cat}`))}</button>`,

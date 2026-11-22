@@ -1,3 +1,4 @@
+import { getExamRules } from '../../domain/examEngine';
 import { appUrl } from '../../config';
 import {
   CATEGORIES,
@@ -50,6 +51,7 @@ export function renderDashboardView(
 
   const readinessPct = Math.round((mastered / total) * 100);
   const version = getTestVersion();
+  const examRules = getExamRules('standard');
   const streak = getStreak(state);
   const todayCount = getTodayCount(state);
   const goal = state.settings.dailyGoal;
@@ -70,7 +72,7 @@ export function renderDashboardView(
   container.innerHTML = `
     <section class="hero-banner" aria-labelledby="main-heading">
       <div>
-        <p class="hero-eyebrow"><span class="hero-stars" aria-hidden="true">★ ★ ★</span> ${escapeHtml(t('dashboard.eyebrow'))}</p>
+        <p class="hero-eyebrow"><span class="hero-stars" aria-hidden="true">★ ★ ★</span> ${escapeHtml(t('dashboard.eyebrow', { year: version }))}</p>
         <h1 id="main-heading" tabindex="-1">${t('dashboard.heroTitle', { total: `<span class="hero-highlight">${total}</span>` })}</h1>
         <p class="view-lead">
           ${
@@ -93,7 +95,7 @@ export function renderDashboardView(
         </div>
       </div>
 
-      <div class="readiness-ring" style="--pct:${readinessPct}" aria-label="${escapeHtml(t('dashboard.readinessAria', { pct: readinessPct }))}">
+      <div class="readiness-ring" style="--pct:${readinessPct}" aria-label="${escapeHtml(t('dashboard.readinessAria', { pct: readinessPct, total }))}">
         <div class="readiness-ring-inner">
           <span class="readiness-value">${readinessPct}%</span>
           <span class="readiness-caption">${escapeHtml(t('dashboard.masteredCaption'))}</span>
@@ -183,7 +185,7 @@ export function renderDashboardView(
         <span class="stat-icon">${ICONS.trophy}</span>
         <span class="stat-label">${escapeHtml(t('dashboard.statExams'))}</span>
         <span class="stat-number">${examsPassed} <span style="font-size:1rem;font-weight:600;color:var(--text-muted)">/ ${examsTaken}</span></span>
-        <span class="stat-sub">${escapeHtml(examsTaken === 0 ? t('dashboard.firstExam') : t('dashboard.passedThreshold'))}</span>
+        <span class="stat-sub">${escapeHtml(examsTaken === 0 ? t('dashboard.firstExam', { n: examRules.maxQuestions }) : t('dashboard.passedThreshold'))}</span>
       </div>
     </section>
 
@@ -211,7 +213,7 @@ export function renderDashboardView(
         <h2 id="history-heading" style="margin:0 0 1rem;font-size:1.15rem;">${escapeHtml(t('dashboard.historyHeading'))}</h2>
         ${
           state.examHistory.length === 0
-            ? `<p style="margin:0;color:var(--text-secondary);">${escapeHtml(t('dashboard.noExams'))}</p>`
+            ? `<p style="margin:0;color:var(--text-secondary);">${escapeHtml(t('dashboard.noExams', { year: version, max: examRules.maxQuestions, pass: examRules.passThreshold, fail: examRules.failThreshold }))}</p>`
             : `
           <ul class="history-list" role="list">
             ${state.examHistory
@@ -224,7 +226,7 @@ export function renderDashboardView(
                 return `
                   <li class="history-item">
                     <div>
-                      <strong>${escapeHtml(rec.mode === '65-20' ? t('dashboard.exam6520') : t('dashboard.examStandard'))}</strong>
+                      <strong>${escapeHtml(rec.mode === '65-20' ? t('dashboard.exam6520') : t('dashboard.examStandard', { year: rec.version ?? '2025' }))}</strong>
                       <div style="font-size:0.8rem;color:var(--text-muted);">${escapeHtml(t('dashboard.historyMeta', { date: dateStr, n: rec.asked }))}</div>
                     </div>
                     <div class="badge-row">

@@ -3,7 +3,7 @@ import type { StringModule } from '../index';
 /** Strings for the dashboard screen. Keys are prefixed with "dashboard.". */
 const strings: StringModule = {
   en: {
-    'dashboard.eyebrow': 'Official USCIS 2025 Naturalization Test',
+    'dashboard.eyebrow': 'Official USCIS {year} Naturalization Test',
     // {total} is replaced with trusted markup (the highlighted number).
     'dashboard.heroTitle': 'Master All {total} Civics Questions in English',
     'dashboard.lead2008':
@@ -15,7 +15,7 @@ const strings: StringModule = {
     'dashboard.startExam': 'Start Mock Exam',
     'dashboard.oralCoach': 'Oral Voice Coach',
     'dashboard.studyFlashcards': 'Study Flashcards',
-    'dashboard.readinessAria': '{pct}% of 128 questions mastered',
+    'dashboard.readinessAria': '{pct}% of {total} questions mastered',
     'dashboard.masteredCaption': 'Mastered',
     'dashboard.personalizeTitle': 'Personalize your state answers:',
     'dashboard.personalizeBody':
@@ -38,21 +38,21 @@ const strings: StringModule = {
     'dashboard.stat6520': '65/20 Starred',
     'dashboard.study6520': 'Study 65/20 subset',
     'dashboard.statExams': 'Mock Exams Passed',
-    'dashboard.firstExam': 'Take your first 20-question test',
+    'dashboard.firstExam': 'Take your first {n}-question test',
     'dashboard.passedThreshold': 'Passed official threshold',
     'dashboard.categoryHeading': 'Mastery by Official Category',
     'dashboard.categoryAria': '{category} mastery: {done} of {total}',
     'dashboard.historyHeading': 'Recent Mock Exams',
     'dashboard.noExams':
-      'No mock exams completed yet. The official 2025 exam asks up to 20 questions and stops as soon as you reach 12 correct (pass) or 9 incorrect (fail).',
+      'No mock exams completed yet. The official {year} exam asks up to {max} questions and stops as soon as you reach {pass} correct (pass) or {fail} incorrect (fail).',
     'dashboard.exam6520': '65/20 Exam ★',
-    'dashboard.examStandard': 'Standard 2025 Exam',
+    'dashboard.examStandard': 'Standard {year} Exam',
     'dashboard.historyMeta': '{date} · {n} asked',
     'dashboard.passed': 'PASSED',
     'dashboard.notPassed': 'NOT PASSED',
   },
   es: {
-    'dashboard.eyebrow': 'Examen oficial de naturalización USCIS 2025',
+    'dashboard.eyebrow': 'Examen oficial de naturalización USCIS {year}',
     'dashboard.heroTitle': 'Domina las {total} preguntas de cívica en inglés',
     'dashboard.lead2008':
       'Estás estudiando el examen 2008 (N-400 presentado antes del 20 de octubre de 2025): te hacen 10 preguntas y necesitas 6 correctas para aprobar.',
@@ -63,7 +63,7 @@ const strings: StringModule = {
     'dashboard.startExam': 'Empezar examen de práctica',
     'dashboard.oralCoach': 'Práctica oral con voz',
     'dashboard.studyFlashcards': 'Estudiar con tarjetas',
-    'dashboard.readinessAria': '{pct}% de las 128 preguntas dominadas',
+    'dashboard.readinessAria': '{pct}% de las {total} preguntas dominadas',
     'dashboard.masteredCaption': 'Dominadas',
     'dashboard.personalizeTitle': 'Personaliza las respuestas de tu estado:',
     'dashboard.personalizeBody':
@@ -86,15 +86,15 @@ const strings: StringModule = {
     'dashboard.stat6520': 'Preguntas 65/20 ★',
     'dashboard.study6520': 'Estudiar solo las 65/20',
     'dashboard.statExams': 'Exámenes aprobados',
-    'dashboard.firstExam': 'Haz tu primer examen de 20 preguntas',
+    'dashboard.firstExam': 'Haz tu primer examen de {n} preguntas',
     'dashboard.passedThreshold': 'Llegaste a la nota oficial para aprobar',
     'dashboard.categoryHeading': 'Progreso por categoría oficial',
     'dashboard.categoryAria': '{category}: {done} de {total} dominadas',
     'dashboard.historyHeading': 'Exámenes de práctica recientes',
     'dashboard.noExams':
-      'Todavía no has hecho ningún examen de práctica. El examen oficial 2025 hace hasta 20 preguntas y termina cuando llegas a 12 correctas (apruebas) o 9 incorrectas (no apruebas).',
+      'Todavía no has hecho ningún examen de práctica. El examen oficial {year} hace hasta {max} preguntas y termina cuando llegas a {pass} correctas (apruebas) o {fail} incorrectas (no apruebas).',
     'dashboard.exam6520': 'Examen 65/20 ★',
-    'dashboard.examStandard': 'Examen estándar 2025',
+    'dashboard.examStandard': 'Examen estándar {year}',
     'dashboard.historyMeta': '{date} · {n} preguntas',
     'dashboard.passed': 'APROBADO',
     'dashboard.notPassed': 'NO APROBADO',
