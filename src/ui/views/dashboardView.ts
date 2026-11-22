@@ -3,12 +3,17 @@ import { appUrl } from '../../config';
 import {
   CATEGORIES,
   CIVICS_QUESTIONS,
+  displayNumber,
+  findQuestionById,
   getTestVersion,
   isDynamicUnconfigured,
 } from '../../domain/questions';
 import { locale, t } from '../../i18n';
 import type { AppView, PersistedState } from '../../domain/types';
+import { READING_SENTENCES, WRITING_SENTENCES } from '../../domain/englishTest';
 import {
+  countEnglishMastered,
+  getMostMissed,
   getQuestionProgress,
   getStreak,
   getTodayCount,
@@ -19,7 +24,7 @@ import { escapeHtml, ICONS } from '../dom';
 export interface DashboardCallbacks {
   onNavigate: (
     view: AppView,
-    options?: { filterReview?: boolean; filter6520?: boolean; filterDue?: boolean },
+    options?: { filterReview?: boolean; filter6520?: boolean; filterDue?: boolean; filterMissed?: boolean },
   ) => void;
   onOpenSettings: () => void;
 }
@@ -62,6 +67,10 @@ export function renderDashboardView(
   const shareHref = `https://wa.me/?text=${encodeURIComponent(t('share.message', { url: appUrl() }))}`;
   const examsTaken = state.examHistory.length;
   const examsPassed = state.examHistory.filter((e) => e.passed).length;
+
+  const missed = getMostMissed(state, CIVICS_QUESTIONS.map((q) => q.id), 5);
+  const englishRead = countEnglishMastered(state, 'reading');
+  const englishWrite = countEnglishMastered(state, 'writing');
 
   const categoryStats = CATEGORIES.map((cat) => {
     const items = CIVICS_QUESTIONS.filter((q) => q.category === cat);
@@ -189,6 +198,43 @@ export function renderDashboardView(
       </div>
     </section>
 
+    ${
+      missed.length > 0
+        ? `
+    <section class="surface-card missed-card" aria-labelledby="missed-heading">
+      <div class="missed-card-head">
+        <div>
+          <h2 id="missed-heading">${escapeHtml(t('dashboard.missedHeading'))}</h2>
+          <p class="field-hint" style="margin:0;">${escapeHtml(t('dashboard.missedHelp'))}</p>
+        </div>
+        <button type="button" class="btn btn--primary" id="drill-missed-btn">${escapeHtml(t('dashboard.missedPractice'))}</button>
+      </div>
+      <ol class="missed-list" role="list">
+        ${missed
+          .map((m) => {
+            const q = findQuestionById(m.id);
+            if (!q) return '';
+            return `<li>
+              <span class="missed-number">${displayNumber(q)}</span>
+              <span class="missed-text" lang="en">${escapeHtml(q.question)}</span>
+              <span class="missed-count">${escapeHtml(t('dashboard.missedCount', { n: m.misses, total: m.attempts }))}</span>
+            </li>`;
+          })
+          .join('')}
+      </ol>
+    </section>`
+        : ''
+    }
+
+    <section class="surface-card english-mini" aria-labelledby="english-mini-heading">
+      <span class="today-emoji" aria-hidden="true">🗣️</span>
+      <div>
+        <h2 id="english-mini-heading">${escapeHtml(t('dashboard.englishHeading'))}</h2>
+        <p class="field-hint" style="margin:0;">${escapeHtml(t('dashboard.englishSummary', { r: englishRead, rt: READING_SENTENCES.length, w: englishWrite, wt: WRITING_SENTENCES.length }))}</p>
+      </div>
+      <button type="button" class="btn btn--secondary" data-go="english">${escapeHtml(t('dashboard.englishGo'))}</button>
+    </section>
+
     <div class="dashboard-columns">
       <section class="surface-card" aria-labelledby="cat-heading">
         <h2 id="cat-heading" style="margin:0 0 1rem;font-size:1.15rem;">${escapeHtml(t('dashboard.categoryHeading'))}</h2>
@@ -263,6 +309,10 @@ export function renderDashboardView(
 
   container.querySelector('#drill-review-btn')?.addEventListener('click', () => {
     callbacks.onNavigate('flashcards', { filterReview: true });
+  });
+
+  container.querySelector('#drill-missed-btn')?.addEventListener('click', () => {
+    callbacks.onNavigate('flashcards', { filterMissed: true });
   });
 
   container.querySelector('#drill-6520-btn')?.addEventListener('click', () => {

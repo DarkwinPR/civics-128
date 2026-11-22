@@ -133,7 +133,9 @@ function mountActiveView(): void {
     renderDashboardView(mainEl, appState, {
       onNavigate: (view, opts) => {
         if (view === 'flashcards') {
-          const filter: FlashcardFilter = opts?.filterDue
+          const filter: FlashcardFilter = opts?.filterMissed
+            ? 'missed'
+            : opts?.filterDue
             ? 'due'
             : opts?.filterReview
             ? 'review'
@@ -183,6 +185,7 @@ function mountActiveView(): void {
       onRecordAttempt: (part, id, passed) => {
         appState = recordEnglishAttempt(appState, part, id, passed);
       },
+      onNavigate: (view) => navigateTo(view),
     });
     return;
   }
