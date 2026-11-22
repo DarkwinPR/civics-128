@@ -17,6 +17,9 @@ const DEFAULT_SETTINGS: StudySettings = {
   officials: { ...DEFAULT_OFFICIALS },
   homeState: '',
   homeDistrict: '',
+  testVersion: '2025',
+  dailyGoal: 10,
+  fontScale: 1,
 };
 
 function defaultState(): PersistedState {
@@ -27,6 +30,7 @@ function defaultState(): PersistedState {
       ...DEFAULT_SETTINGS,
       officials: { ...DEFAULT_OFFICIALS },
     },
+    activity: {},
   };
 }
 
@@ -59,7 +63,20 @@ export function loadState(): PersistedState {
           typeof parsed.settings?.homeState === 'string' ? parsed.settings.homeState : '',
         homeDistrict:
           typeof parsed.settings?.homeDistrict === 'string' ? parsed.settings.homeDistrict : '',
+        testVersion: parsed.settings?.testVersion === '2008' ? '2008' : '2025',
+        dailyGoal:
+          typeof parsed.settings?.dailyGoal === 'number' && parsed.settings.dailyGoal > 0
+            ? parsed.settings.dailyGoal
+            : DEFAULT_SETTINGS.dailyGoal,
+        fontScale:
+          typeof parsed.settings?.fontScale === 'number' &&
+          parsed.settings.fontScale >= 0.9 &&
+          parsed.settings.fontScale <= 1.5
+            ? parsed.settings.fontScale
+            : DEFAULT_SETTINGS.fontScale,
       },
+      activity:
+        parsed.activity && typeof parsed.activity === 'object' ? parsed.activity : {},
     };
   } catch {
     return defaultState();
@@ -87,6 +104,54 @@ export function getQuestionProgress(
   );
 }
 
+// ---------------------------------------------------------------------------
+// Spaced repetition (Leitner boxes) & daily activity
+// ---------------------------------------------------------------------------
+
+/** Days until a card in each box is due again. */
+const BOX_INTERVAL_DAYS = [0, 1, 3, 7, 14, 30];
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function dueDateForBox(box: number, from = new Date()): string {
+  const days = BOX_INTERVAL_DAYS[Math.min(box, BOX_INTERVAL_DAYS.length - 1)] ?? 0;
+  return new Date(from.getTime() + days * DAY_MS).toISOString();
+}
+
+/** A card is due when it was practiced before and its review date has arrived. */
+export function isDueForReview(progress: QuestionProgress, now = new Date()): boolean {
+  if (progress.status === 'unseen') return false;
+  if (!progress.dueAt) return progress.status === 'review';
+  return new Date(progress.dueAt).getTime() <= now.getTime();
+}
+
+export function localDayKey(date = new Date()): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function bumpActivity(activity: Record<string, number>): Record<string, number> {
+  const key = localDayKey();
+  return { ...activity, [key]: (activity[key] ?? 0) + 1 };
+}
+
+export function getTodayCount(state: PersistedState): number {
+  return state.activity[localDayKey()] ?? 0;
+}
+
+/** Consecutive days (ending today, or yesterday if today has no practice yet) with practice. */
+export function getStreak(state: PersistedState, now = new Date()): number {
+  let streak = 0;
+  const cursor = new Date(now);
+  if (!state.activity[localDayKey(cursor)]) cursor.setDate(cursor.getDate() - 1);
+  while (state.activity[localDayKey(cursor)]) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
 export function setQuestionStatus(
   state: PersistedState,
   questionId: number,
@@ -101,8 +166,14 @@ export function setQuestionStatus(
         ...existing,
         status,
         lastPracticedAt: new Date().toISOString(),
+        ...(status === 'mastered'
+          ? { box: Math.max(existing.box ?? 0, 3), dueAt: dueDateForBox(Math.max(existing.box ?? 0, 3)) }
+          : status === 'review'
+            ? { box: 0, dueAt: dueDateForBox(0) }
+            : { box: undefined, dueAt: undefined }),
       },
     },
+    activity: status === 'unseen' ? state.activity : bumpActivity(state.activity),
   };
   saveState(next);
   return next;
@@ -119,6 +190,7 @@ export function recordPracticeResult(
       ? 'review'
       : 'mastered'
     : 'review';
+  const nextBox = correct ? Math.min((existing.box ?? 0) + 1, BOX_INTERVAL_DAYS.length - 1) : 0;
 
   const next: PersistedState = {
     ...state,
@@ -129,8 +201,11 @@ export function recordPracticeResult(
         attempts: existing.attempts + 1,
         correct: existing.correct + (correct ? 1 : 0),
         lastPracticedAt: new Date().toISOString(),
+        box: nextBox,
+        dueAt: dueDateForBox(nextBox),
       },
     },
+    activity: bumpActivity(state.activity),
   };
   saveState(next);
   return next;
@@ -175,6 +250,7 @@ export function resetProgressOnly(state: PersistedState): PersistedState {
     progress: {},
     examHistory: [],
     settings: state.settings,
+    activity: {},
   };
   saveState(next);
   return next;

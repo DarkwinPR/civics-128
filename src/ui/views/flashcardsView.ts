@@ -2,8 +2,7 @@ import {
   CATEGORIES,
   CIVICS_QUESTIONS,
   getEffectiveAnswers,
-  isDynamicUnconfigured,
-} from '../../domain/questions';
+  isDynamicUnconfigured, displayNumber } from '../../domain/questions';
 import { shuffleArray } from '../../domain/examEngine';
 import type { CivicsCategory, CivicsQuestion, MasteryStatus, PersistedState } from '../../domain/types';
 import { getQuestionProgress } from '../../services/storage';
@@ -392,7 +391,7 @@ export function mountFlashcardsView(
           <article class="question-card" aria-label="Flashcard ${question.id}">
             <div class="question-card-top">
               <div class="badge-row">
-                <span class="badge badge--number">Q${question.id}</span>
+                <span class="badge badge--number">Q${displayNumber(question)}</span>
                 <span class="badge badge--category">${escapeHtml(question.category)}</span>
                 ${question.is6520 ? `<span class="badge badge--6520">★ 65/20</span>` : ''}
                 ${question.dynamicKey ? `<span class="badge badge--dynamic">Current Official</span>` : ''}

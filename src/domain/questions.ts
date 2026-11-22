@@ -1,4 +1,11 @@
-import type { CivicsQuestion, DynamicOfficialKey, OfficialOverrides } from './types';
+import { CIVICS_QUESTIONS_2008 } from './questions2008';
+import type {
+  CivicsCategory,
+  CivicsQuestion,
+  DynamicOfficialKey,
+  OfficialOverrides,
+  TestVersion,
+} from './types';
 
 export const DEFAULT_OFFICIALS: OfficialOverrides = {
   president: 'Donald J. Trump',
@@ -69,7 +76,7 @@ export const OFFICIAL_LABELS: Record<
  * Official 128 Civics Questions and Answers (2025 version)
  * Source: USCIS Form M-1778 (09/25)
  */
-export const CIVICS_QUESTIONS: readonly CivicsQuestion[] = [
+export const QUESTIONS_2025: readonly CivicsQuestion[] = [
   // =========================================================================
   // AMERICAN GOVERNMENT — A: Principles of American Government (1–15)
   // =========================================================================
@@ -1662,11 +1669,45 @@ export const CIVICS_QUESTIONS: readonly CivicsQuestion[] = [
   },
 ];
 
-export const CATEGORIES = [
+const CATEGORIES_2025: readonly CivicsCategory[] = [
   'American Government',
   'American History',
   'Symbols and Holidays',
-] as const;
+];
+
+const CATEGORIES_2008: readonly CivicsCategory[] = [
+  'American Government',
+  'American History',
+  'Integrated Civics',
+];
+
+let activeVersion: TestVersion = '2025';
+
+/**
+ * The active question bank. ES module live bindings mean every importer sees
+ * the new bank after setTestVersion() — no prop drilling needed.
+ */
+export let CIVICS_QUESTIONS: readonly CivicsQuestion[] = QUESTIONS_2025;
+export let CATEGORIES: readonly CivicsCategory[] = CATEGORIES_2025;
+
+export function setTestVersion(version: TestVersion): void {
+  activeVersion = version;
+  CIVICS_QUESTIONS = version === '2008' ? CIVICS_QUESTIONS_2008 : QUESTIONS_2025;
+  CATEGORIES = version === '2008' ? CATEGORIES_2008 : CATEGORIES_2025;
+}
+
+export function getTestVersion(): TestVersion {
+  return activeVersion;
+}
+
+/** Official question number as printed by USCIS (2008 ids are stored as 1001–1100). */
+export function displayNumber(question: CivicsQuestion): number {
+  return question.id > 1000 ? question.id - 1000 : question.id;
+}
+
+export function findQuestionById(id: number): CivicsQuestion | undefined {
+  return (id > 1000 ? CIVICS_QUESTIONS_2008 : QUESTIONS_2025).find((q) => q.id === id);
+}
 
 export function getEffectiveAnswers(
   question: CivicsQuestion,

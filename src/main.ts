@@ -4,7 +4,11 @@ import './styles/components.css';
 import './styles/views.css';
 import './styles/vibrant.css';
 
+import { setTestVersion } from './domain/questions';
 import type { AppView, PersistedState } from './domain/types';
+import { applyStaticTranslations, getLang, onLangChange, setLang, t } from './i18n';
+import { registerServiceWorker } from './services/pwa';
+import { mountEnglishTestView } from './ui/views/englishTestView';
 import { closeDialogSmoothly, enhanceModalDialog } from './services/dialogHelper';
 import { isSpeechSynthesisSupported } from './services/speech';
 import {
@@ -28,15 +32,12 @@ import {
 import { mountMockExamView } from './ui/views/mockExamView';
 import { mountOralPracticeView } from './ui/views/oralPracticeView';
 
-const VIEW_TITLES: Record<AppView, string> = {
-  dashboard: 'Overview | U.S. Civics 128 Practice (2025)',
-  flashcards: 'Flashcards | U.S. Civics 128 Practice (2025)',
-  exam: 'Mock Exam | U.S. Civics 128 Practice (2025)',
-  oral: 'Oral Voice Coach | U.S. Civics 128 Practice (2025)',
-  bank: 'All 128 Questions | U.S. Civics 128 Practice (2025)',
-};
+function viewTitle(view: AppView): string {
+  return `${t(`title.${view}`)} | ${t('title.suffix')}`;
+}
 
 let appState: PersistedState = loadState();
+setTestVersion(appState.settings.testVersion);
 let currentView: AppView = 'dashboard';
 let cleanupCurrentView: (() => void) | null = null;
 let flashcardsState: FlashcardsViewState = createInitialFlashcardsState(appState, 'all');
@@ -58,7 +59,14 @@ function refreshSettingsModal(): void {
   renderSettingsDialogBody(settingsBody, settingsDialog, confirmDialog, {
     getState: () => appState,
     onUpdateSettings: (patch) => {
+      const versionChanged =
+        patch.testVersion !== undefined && patch.testVersion !== appState.settings.testVersion;
       appState = updateSettings(appState, patch);
+      if (versionChanged) {
+        setTestVersion(appState.settings.testVersion);
+        flashcardsState = createInitialFlashcardsState(appState, 'all');
+      }
+      applyAppearance();
       renderCurrentView(false);
     },
     onResetProgress: () => {
@@ -106,7 +114,7 @@ function mountActiveView(): void {
   cleanupCurrentView?.();
   cleanupCurrentView = null;
 
-  document.title = VIEW_TITLES[currentView];
+  document.title = viewTitle(currentView);
   updateNavActive();
 
   if (currentView === 'dashboard') {
@@ -151,6 +159,13 @@ function mountActiveView(): void {
         flashcardsState = createInitialFlashcardsState(appState, 'review');
         navigateTo('flashcards');
       },
+    });
+    return;
+  }
+
+  if (currentView === 'english') {
+    cleanupCurrentView = mountEnglishTestView(mainEl, {
+      getState: () => appState,
     });
     return;
   }
@@ -215,5 +230,40 @@ document.querySelectorAll<HTMLButtonElement>('.nav-btn[data-view]').forEach((btn
   });
 });
 
+/** Text size, test-version subtitle and other settings reflected in the page shell. */
+function applyAppearance(): void {
+  document.documentElement.style.fontSize = `${Math.round(appState.settings.fontScale * 100)}%`;
+  const subtitle = document.getElementById('brand-subtitle');
+  if (subtitle) {
+    subtitle.textContent = t(
+      appState.settings.testVersion === '2008' ? 'app.subtitle2008' : 'app.subtitle2025',
+    );
+  }
+}
+
+// Language toggle (English <-> Spanish interface)
+const langToggleBtn = document.getElementById('lang-toggle-btn') as HTMLButtonElement | null;
+langToggleBtn?.addEventListener('click', () => {
+  setLang(getLang() === 'es' ? 'en' : 'es');
+});
+
+onLangChange(() => {
+  applyStaticTranslations();
+  applyAppearance();
+  renderCurrentView(false);
+  if (settingsDialog.open) refreshSettingsModal();
+});
+
+// Offline support + "new version" banner
+registerServiceWorker((applyUpdate) => {
+  const banner = document.getElementById('update-banner');
+  const button = document.getElementById('update-banner-btn');
+  if (!banner || !button) return;
+  banner.hidden = false;
+  button.addEventListener('click', applyUpdate, { once: true });
+});
+
 // Initial render
+applyStaticTranslations();
+applyAppearance();
 renderCurrentView(false);

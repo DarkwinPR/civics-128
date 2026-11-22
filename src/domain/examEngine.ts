@@ -1,3 +1,4 @@
+import { getTestVersion } from './questions';
 import type { CivicsQuestion, ExamMode } from './types';
 
 export interface ExamRules {
@@ -22,6 +23,12 @@ export interface ExamSessionState {
 }
 
 export function getExamRules(mode: ExamMode): ExamRules {
+  if (getTestVersion() === '2008') {
+    // 2008 test (N-400 filed before Oct 20, 2025): up to 10 questions, 6 correct to pass.
+    // 65/20 applicants get the same count from the 20 asterisked questions.
+    return { mode, maxQuestions: 10, passThreshold: 6, failThreshold: 5 };
+  }
+
   if (mode === '65-20') {
     // Official USCIS 2025 65/20 Special Consideration:
     // 10 questions asked from the 20 asterisked (*) questions; 6 correct to pass (5 incorrect = fail).

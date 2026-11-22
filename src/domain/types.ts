@@ -1,7 +1,11 @@
 export type CivicsCategory =
   | 'American Government'
   | 'American History'
-  | 'Symbols and Holidays';
+  | 'Symbols and Holidays'
+  | 'Integrated Civics';
+
+/** 2025 test (128 questions) or 2008 test (100 questions, N-400 filed before Oct 20, 2025). */
+export type TestVersion = '2025' | '2008';
 
 export type DynamicOfficialKey =
   | 'president'
@@ -32,6 +36,10 @@ export interface QuestionProgress {
   attempts: number;
   correct: number;
   lastPracticedAt?: string;
+  /** Spaced-repetition box (0 = new/wrong … 5 = long-term). */
+  box?: number;
+  /** ISO date when the card is due again for smart review. */
+  dueAt?: string;
 }
 
 export type ExamMode = 'standard' | '65-20';
@@ -47,6 +55,7 @@ export interface ExamRecord {
   targetPass: number;
   maxQuestions: number;
   missedIds: number[];
+  version?: TestVersion;
 }
 
 export interface OfficialOverrides {
@@ -71,15 +80,22 @@ export interface StudySettings {
   homeState: string;
   /** Congressional district number as text ('' = not chosen). */
   homeDistrict: string;
+  testVersion: TestVersion;
+  /** Questions to practice per day. */
+  dailyGoal: number;
+  /** Text size multiplier (1 = normal). */
+  fontScale: number;
 }
 
 export interface PersistedState {
   progress: Record<number, QuestionProgress>;
   examHistory: ExamRecord[];
   settings: StudySettings;
+  /** Practice count per local day, keyed YYYY-MM-DD. */
+  activity: Record<string, number>;
 }
 
-export type AppView = 'dashboard' | 'flashcards' | 'exam' | 'oral' | 'bank';
+export type AppView = 'dashboard' | 'flashcards' | 'exam' | 'oral' | 'english' | 'bank';
 
 export interface AnswerMatchResult {
   isMatch: boolean;

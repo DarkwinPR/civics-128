@@ -1,4 +1,4 @@
-import { CATEGORIES, CIVICS_QUESTIONS, getEffectiveAnswers } from '../../domain/questions';
+import { CATEGORIES, CIVICS_QUESTIONS, getEffectiveAnswers, displayNumber } from '../../domain/questions';
 import type { CivicsCategory, MasteryStatus, PersistedState } from '../../domain/types';
 import { getQuestionProgress } from '../../services/storage';
 import { isSpeechSynthesisSupported, speakText, stopSpeaking } from '../../services/speech';
@@ -74,7 +74,7 @@ export function mountBankView(container: HTMLElement, callbacks: BankCallbacks):
         return `
           <article class="bank-card" aria-label="Question ${q.id}">
             <div class="badge-row">
-              <span class="badge badge--number">Q${q.id}</span>
+              <span class="badge badge--number">Q${displayNumber(q)}</span>
               <span class="badge badge--category">${escapeHtml(q.category)}</span>
               ${q.is6520 ? `<span class="badge badge--6520">★ 65/20</span>` : ''}
             </div>

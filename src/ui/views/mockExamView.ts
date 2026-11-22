@@ -5,7 +5,7 @@ import {
   submitExamAnswer,
   type ExamSessionState,
 } from '../../domain/examEngine';
-import { CIVICS_QUESTIONS, getEffectiveAnswers } from '../../domain/questions';
+import { CIVICS_QUESTIONS, getEffectiveAnswers, displayNumber } from '../../domain/questions';
 import type { AnswerMatchResult, ExamMode, ExamRecord, PersistedState } from '../../domain/types';
 import {
   isSpeechRecognitionSupported,
@@ -298,7 +298,7 @@ export function mountMockExamView(
                 return `
                   <li class="review-card ${res.correct ? 'review-card--correct' : 'review-card--wrong'}">
                     <div class="badge-row" style="margin-block-end:0.45rem;">
-                      <span class="badge badge--number">#${idx + 1} · Q${q.id}</span>
+                      <span class="badge badge--number">#${idx + 1} · Q${displayNumber(q)}</span>
                       <span class="badge ${res.correct ? 'badge--mastered' : 'badge--review'}">
                         ${res.correct ? 'Correct' : 'Missed'}
                       </span>
@@ -375,7 +375,7 @@ export function mountMockExamView(
         <article class="question-card">
           <div class="question-card-top">
             <div class="badge-row">
-              <span class="badge badge--number">Q${question.id}</span>
+              <span class="badge badge--number">Q${displayNumber(question)}</span>
               <span class="badge badge--category">${escapeHtml(question.category)}</span>
               ${question.is6520 ? `<span class="badge badge--6520">★ 65/20</span>` : ''}
             </div>
