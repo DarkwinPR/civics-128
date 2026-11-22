@@ -35,11 +35,12 @@ const listeners = new Set<(lang: Lang) => void>();
 
 function detectLang(): Lang {
   try {
-    const saved = localStorage.getItem(LANG_KEY);
+    const saved = typeof localStorage === 'undefined' ? null : localStorage.getItem(LANG_KEY);
     if (saved === 'en' || saved === 'es') return saved;
   } catch {
     // Storage unavailable: fall back to the browser language.
   }
+  if (typeof navigator === 'undefined') return 'en';
   return navigator.language?.toLowerCase().startsWith('es') ? 'es' : 'en';
 }
 
@@ -57,7 +58,7 @@ export function setLang(lang: Lang): void {
   } catch {
     // Ignore storage errors; the choice still applies for this visit.
   }
-  document.documentElement.lang = lang;
+  if (typeof document !== 'undefined') document.documentElement.lang = lang;
   listeners.forEach((fn) => fn(lang));
 }
 
@@ -106,4 +107,4 @@ export function applyStaticTranslations(root: ParentNode = document): void {
   });
 }
 
-document.documentElement.lang = current;
+if (typeof document !== 'undefined') document.documentElement.lang = current;

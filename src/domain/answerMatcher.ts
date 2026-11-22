@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { getEffectiveAnswers } from './questions';
 import type { AnswerMatchResult, CivicsQuestion, OfficialOverrides } from './types';
 
@@ -192,7 +193,7 @@ export function evaluateAnswer(
       matchedAnswers: [],
       requiredCount: question.requiredCount,
       confidence: 0,
-      feedback: 'No answer captured yet. Speak or type your response.',
+      feedback: t('match.empty'),
     };
   }
 
@@ -234,13 +235,16 @@ export function evaluateAnswer(
   if (isMatch) {
     feedback =
       question.requiredCount > 1
-        ? `Correct — matched ${matchedAnswers.length} of ${question.requiredCount} required answers.`
-        : 'Correct — matches an official USCIS answer.';
+        ? t('match.correctMany', { n: matchedAnswers.length, required: question.requiredCount })
+        : t('match.correct');
   } else if (matchedAnswers.length > 0) {
-    feedback = `Partial match — found ${matchedAnswers.length} of ${question.requiredCount} required answers (${matchedAnswers.join(', ')}).`;
+    feedback = t('match.partial', {
+      n: matchedAnswers.length,
+      required: question.requiredCount,
+      list: matchedAnswers.join(', '),
+    });
   } else {
-    feedback =
-      'Did not automatically match an official answer. Compare with the official list below — you can still mark it correct if your phrasing was valid.';
+    feedback = t('match.none');
   }
 
   return {

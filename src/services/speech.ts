@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 interface SpeechRecognitionAlternativeLike {
   readonly transcript: string;
   readonly confidence: number;
@@ -124,9 +125,7 @@ export function startListening(callbacks: {
 }): ListeningSession | null {
   const Ctor = getSpeechRecognitionCtor();
   if (!Ctor) {
-    callbacks.onError?.(
-      'Voice recognition is not supported in this browser. Type your answer below instead.',
-    );
+    callbacks.onError?.(t('mic.unsupported'));
     return null;
   }
 
@@ -165,15 +164,14 @@ export function startListening(callbacks: {
 
   recognition.onerror = (event: SpeechRecognitionErrorEventLike) => {
     const messages: Record<string, string> = {
-      'not-allowed': 'Microphone permission was denied. Allow mic access or type your answer.',
-      'service-not-allowed': 'Speech recognition service is blocked in this browser.',
-      'no-speech': 'No speech detected. Try speaking clearly closer to your microphone.',
-      'audio-capture': 'No microphone found on this device.',
-      network: 'Speech recognition requires an active internet connection in this browser.',
+      'not-allowed': t('mic.denied'),
+      'service-not-allowed': t('mic.blocked'),
+      'no-speech': t('mic.noSpeech'),
+      'audio-capture': t('mic.noDevice'),
+      network: t('mic.network'),
       aborted: '',
     };
-    const msg =
-      messages[event.error] ?? `Microphone error (${event.error}). You can type your answer instead.`;
+    const msg = messages[event.error] ?? t('mic.other', { code: event.error });
     if (msg) {
       callbacks.onError?.(msg);
     }
@@ -190,7 +188,7 @@ export function startListening(callbacks: {
   try {
     recognition.start();
   } catch {
-    callbacks.onError?.('Could not start microphone capture. Please try again.');
+    callbacks.onError?.(t('mic.startFailed'));
     return null;
   }
 

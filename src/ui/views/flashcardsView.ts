@@ -396,7 +396,7 @@ export function mountFlashcardsView(
                   : escapeHtml(t('flashcards.emptyOther'))
               }
             </p>
-            <button type="button" id="fc-show-all-btn" class="btn btn--primary">${escapeHtml(t('flashcards.studyAll'))}</button>
+            <button type="button" id="fc-show-all-btn" class="btn btn--primary">${escapeHtml(t('flashcards.studyAll', { n: CIVICS_QUESTIONS.length }))}</button>
           </div>
         `
             : `

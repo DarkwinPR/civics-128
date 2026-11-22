@@ -55,6 +55,20 @@ const strings: StringModule = {
     'share.passedMessage':
       'I just passed a practice U.S. citizenship test with {score}! Study for free here: {url}',
     'report.title': 'Report a mistake',
+    'match.empty': 'No answer captured yet. Speak or type your response.',
+    'match.correct': 'Correct — matches an official USCIS answer.',
+    'match.correctMany': 'Correct — matched {n} of {required} required answers.',
+    'match.partial': 'Partial match — found {n} of {required} required answers ({list}).',
+    'match.none':
+      'Did not automatically match an official answer. Compare with the official list below — you can still mark it correct if your phrasing was valid.',
+    'mic.unsupported': 'Voice recognition is not supported in this browser. Type your answer below instead.',
+    'mic.denied': 'Microphone permission was denied. Allow mic access or type your answer.',
+    'mic.blocked': 'Speech recognition service is blocked in this browser.',
+    'mic.noSpeech': 'No speech detected. Try speaking clearly closer to your microphone.',
+    'mic.noDevice': 'No microphone found on this device.',
+    'mic.network': 'Speech recognition requires an active internet connection in this browser.',
+    'mic.other': 'Microphone error ({code}). You can type your answer instead.',
+    'mic.startFailed': 'Could not start microphone capture. Please try again.',
   },
   es: {
     'app.subtitle2025': 'Examen USCIS 2025 · 128 preguntas',
@@ -109,6 +123,20 @@ const strings: StringModule = {
     'share.passedMessage':
       '¡Acabo de aprobar un examen de práctica de ciudadanía con {score}! Estudia gratis aquí: {url}',
     'report.title': 'Reportar un error',
+    'match.empty': 'Todavía no hay respuesta. Habla o escribe tu respuesta.',
+    'match.correct': 'Correcto: coincide con una respuesta oficial de USCIS.',
+    'match.correctMany': 'Correcto: coincidiste con {n} de las {required} respuestas necesarias.',
+    'match.partial': 'Coincidencia parcial: encontramos {n} de las {required} respuestas necesarias ({list}).',
+    'match.none':
+      'No coincidió automáticamente con una respuesta oficial. Compárala con la lista oficial de abajo; si tu respuesta era válida, puedes marcarla como correcta.',
+    'mic.unsupported': 'Este navegador no reconoce la voz. Escribe tu respuesta abajo.',
+    'mic.denied': 'Se negó el permiso del micrófono. Permite el acceso o escribe tu respuesta.',
+    'mic.blocked': 'El reconocimiento de voz está bloqueado en este navegador.',
+    'mic.noSpeech': 'No se escuchó nada. Habla claro y más cerca del micrófono.',
+    'mic.noDevice': 'No se encontró un micrófono en este dispositivo.',
+    'mic.network': 'El reconocimiento de voz necesita conexión a internet en este navegador.',
+    'mic.other': 'Error del micrófono ({code}). Puedes escribir tu respuesta.',
+    'mic.startFailed': 'No se pudo iniciar el micrófono. Inténtalo de nuevo.',
   },
 };
 
