@@ -105,6 +105,8 @@ function updateNavActive(): void {
   document.querySelectorAll<HTMLButtonElement>('.nav-btn[data-view]').forEach((btn) => {
     if (btn.dataset.view === currentView) {
       btn.setAttribute('aria-current', 'page');
+      // On phones the tab row scrolls sideways; keep the active tab visible.
+      btn.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     } else {
       btn.removeAttribute('aria-current');
     }

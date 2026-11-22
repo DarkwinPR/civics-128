@@ -1147,3 +1147,43 @@ dialog.modal-dialog {
     animation: none !important;
   }
 }
+
+/* ---------- Phone: one swipeable row of tabs instead of three wrapped lines ---------- */
+.app-shell {
+  /* Never let wide content (like the tab row) stretch the page past the screen. */
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.header-inner > * {
+  min-inline-size: 0;
+}
+
+@media (max-width: 720px) {
+  .primary-nav {
+    justify-content: flex-start;
+    margin-inline: calc(-1 * clamp(1rem, 3vw, 2rem));
+    padding-inline: clamp(1rem, 3vw, 2rem);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    mask-image: linear-gradient(90deg, #000 85%, transparent);
+  }
+
+  .primary-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-list {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    padding-inline-end: 2rem;
+  }
+
+  .nav-btn {
+    white-space: nowrap;
+  }
+
+  .nav-btn:hover {
+    transform: none;
+  }
+}
