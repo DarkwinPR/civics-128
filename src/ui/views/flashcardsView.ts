@@ -2,15 +2,19 @@ import {
   CATEGORIES,
   CIVICS_QUESTIONS,
   getEffectiveAnswers,
-  isDynamicUnconfigured, displayNumber } from '../../domain/questions';
+  displayNumber,
+  getTestVersion,
+  isDynamicUnconfigured,
+} from '../../domain/questions';
 import { shuffleArray } from '../../domain/examEngine';
 import type { CivicsCategory, CivicsQuestion, MasteryStatus, PersistedState } from '../../domain/types';
-import { getQuestionProgress } from '../../services/storage';
+import { getQuestionProgress, isDueForReview } from '../../services/storage';
+import { renderReportLink, renderTranslationToggle } from '../translation';
 import { isSpeechSynthesisSupported, speakText, stopSpeaking } from '../../services/speech';
 import { announce } from '../announcer';
 import { escapeHtml, ICONS } from '../dom';
 
-export type FlashcardFilter = 'all' | '65-20' | 'review' | CivicsCategory;
+export type FlashcardFilter = 'all' | '65-20' | 'review' | 'due' | CivicsCategory;
 
 const AUTO_REVEAL_MS = 7000;
 
@@ -54,6 +58,18 @@ function buildDeck(
     list = list.filter((q) => q.is6520);
   } else if (filter === 'review') {
     list = list.filter((q) => getQuestionProgress(state, q.id).status === 'review');
+  } else if (filter === 'due') {
+    // Smart review: cards whose spaced-repetition date has arrived, oldest first.
+    const now = new Date();
+    list = list
+      .filter((q) => isDueForReview(getQuestionProgress(state, q.id), now))
+      .sort(
+        (a, b) =>
+          (getQuestionProgress(state, a.id).dueAt ?? '').localeCompare(
+            getQuestionProgress(state, b.id).dueAt ?? '',
+          ),
+      );
+    return list;
   } else if (filter !== 'all') {
     list = list.filter((q) => q.category === filter);
   }
@@ -67,6 +83,7 @@ export function mountFlashcardsView(
 ): () => void {
   const ttsSupported = isSpeechSynthesisSupported();
   let isSpeaking = false;
+  let showTranslation = false;
   let remainingMs = AUTO_REVEAL_MS;
   let timerPaused = false;
   let countdownInterval: number | undefined;
@@ -214,6 +231,7 @@ export function mountFlashcardsView(
     const len = viewState.deckIds.length;
     viewState.index = (viewState.index + delta + len) % len;
     viewState.revealed = false;
+    showTranslation = false;
     resetCountdown();
     render();
     if (callbacks.getState().settings.autoSpeak) {
@@ -298,9 +316,15 @@ export function mountFlashcardsView(
       (q) => getQuestionProgress(appState, q.id).status === 'review',
     ).length;
 
+    const dueCount = CIVICS_QUESTIONS.filter((q) =>
+      isDueForReview(getQuestionProgress(appState, q.id)),
+    ).length;
+    const starredCount = CIVICS_QUESTIONS.filter((q) => q.is6520).length;
+
     const filters: Array<{ id: FlashcardFilter; label: string }> = [
-      { id: 'all', label: 'All (128)' },
-      { id: '65-20', label: '65/20 ★ (20)' },
+      { id: 'all', label: `All (${CIVICS_QUESTIONS.length})` },
+      { id: 'due', label: `Smart Review (${dueCount})` },
+      { id: '65-20', label: `65/20 ★ (${starredCount})` },
       { id: 'review', label: `Needs Review (${reviewCount})` },
       ...CATEGORIES.map((c) => ({ id: c as FlashcardFilter, label: c })),
     ];
@@ -423,6 +447,7 @@ export function mountFlashcardsView(
 
             <p class="question-section-label">${escapeHtml(question.section)}</p>
             <h2 class="question-stem">${escapeHtml(question.question)}</h2>
+            ${renderTranslationToggle(question, showTranslation, viewState.revealed)}
 
             ${
               question.requiredCount > 1
@@ -514,6 +539,7 @@ export function mountFlashcardsView(
                 </button>
               </div>
             </div>
+            <p class="report-row">${renderReportLink(question, getTestVersion())}</p>
           </article>
 
           <div class="kbd-hint" aria-label="Keyboard shortcuts">
@@ -558,6 +584,10 @@ export function mountFlashcardsView(
     container
       .querySelector('#fc-speak-answers-btn')
       ?.addEventListener('click', () => speakCurrent(true));
+    container.querySelector('[data-action="toggle-translation"]')?.addEventListener('click', () => {
+      showTranslation = !showTranslation;
+      render();
+    });
     container.querySelector('#fc-open-settings')?.addEventListener('click', () => {
       callbacks.onOpenSettings();
     });
