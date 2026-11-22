@@ -69,6 +69,9 @@ const strings: StringModule = {
     'mic.network': 'Speech recognition requires an active internet connection in this browser.',
     'mic.other': 'Microphone error ({code}). You can type your answer instead.',
     'mic.startFailed': 'Could not start microphone capture. Please try again.',
+    'district.delegate': 'Delegate / Resident Commissioner',
+    'district.atLarge': 'At-large (whole state)',
+    'district.number': 'District {n}',
   },
   es: {
     'app.subtitle2025': 'Examen USCIS 2025 · 128 preguntas',
@@ -137,6 +140,9 @@ const strings: StringModule = {
     'mic.network': 'El reconocimiento de voz necesita conexión a internet en este navegador.',
     'mic.other': 'Error del micrófono ({code}). Puedes escribir tu respuesta.',
     'mic.startFailed': 'No se pudo iniciar el micrófono. Inténtalo de nuevo.',
+    'district.delegate': 'Delegado / Comisionado Residente',
+    'district.atLarge': 'Distrito único (todo el estado)',
+    'district.number': 'Distrito {n}',
   },
 };
 

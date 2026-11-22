@@ -4,6 +4,8 @@
  * Only a public file is downloaded; nothing about the user is sent.
  * The compact result is cached in localStorage for 24 hours.
  */
+import { t } from '../i18n';
+
 const SOURCE_URL =
   'https://unitedstates.github.io/congress-legislators/legislators-current.json';
 const CACHE_KEY = 'civics128:congress:v1';
@@ -106,6 +108,6 @@ export function loadCongressIndex(): Promise<CongressIndex> {
 }
 
 export function districtLabel(rep: Representative): string {
-  if (rep.isDelegate) return 'Delegate / Resident Commissioner';
-  return rep.district === 0 ? 'At-large (whole state)' : `District ${rep.district}`;
+  if (rep.isDelegate) return t('district.delegate');
+  return rep.district === 0 ? t('district.atLarge') : t('district.number', { n: rep.district });
 }
