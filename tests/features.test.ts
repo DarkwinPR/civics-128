@@ -33,6 +33,7 @@ const emptyState = (): PersistedState => ({
     testVersion: '2025',
     dailyGoal: 10,
     fontScale: 1,
+    interviewDate: '',
     officials: {
       president: '',
       vicePresident: '',

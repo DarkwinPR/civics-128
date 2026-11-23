@@ -92,14 +92,14 @@ export function renderDashboardView(
           ${escapeHtml(t('dashboard.leadTrain'))}
         </p>
         <div class="hero-actions">
-          <button type="button" class="btn btn--primary btn--lg" data-go="exam">
-            ${ICONS.play} ${escapeHtml(t('dashboard.startExam'))}
+          <button type="button" class="btn btn--primary btn--lg" data-go="path">
+            ${ICONS.play} ${escapeHtml(t('dashboard.studyToday'))}
+          </button>
+          <button type="button" class="btn btn--secondary btn--lg" data-go="exam">
+            ${ICONS.target} ${escapeHtml(t('dashboard.startExam'))}
           </button>
           <button type="button" class="btn btn--secondary btn--lg" data-go="oral">
             ${ICONS.mic} ${escapeHtml(t('dashboard.oralCoach'))}
-          </button>
-          <button type="button" class="btn btn--secondary btn--lg" data-go="flashcards">
-            ${ICONS.cards} ${escapeHtml(t('dashboard.studyFlashcards'))}
           </button>
         </div>
       </div>

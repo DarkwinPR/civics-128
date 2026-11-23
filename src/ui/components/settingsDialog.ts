@@ -120,6 +120,11 @@ export function renderSettingsDialogBody(
       </fieldset>
       <div class="officials-grid">
         <div class="field">
+          <label for="interview-date">${escapeHtml(t('settings.interviewDate'))}</label>
+          <input id="interview-date" class="text-input" type="date" value="${escapeHtml(state.settings.interviewDate)}" aria-describedby="interview-date-hint" />
+          <span id="interview-date-hint" class="field-hint">${escapeHtml(t('settings.interviewDateHint'))}</span>
+        </div>
+        <div class="field">
           <label for="daily-goal">${escapeHtml(t('settings.dailyGoal'))}</label>
           <select id="daily-goal" class="select-input">
             ${goalOptions
@@ -316,6 +321,13 @@ export function renderSettingsDialogBody(
       handlers.onUpdateSettings({ testVersion: radio.value as TestVersion });
       announce(t('settings.announceVersion', { version: radio.value }));
     });
+  });
+
+  const dateInput = container.querySelector<HTMLInputElement>('#interview-date');
+  dateInput?.addEventListener('change', () => {
+    const value = /^\d{4}-\d{2}-\d{2}$/.test(dateInput.value) ? dateInput.value : '';
+    handlers.onUpdateSettings({ interviewDate: value });
+    announce(value ? t('settings.interviewDateSaved') : t('settings.interviewDateCleared'));
   });
 
   const goalSelect = container.querySelector<HTMLSelectElement>('#daily-goal');

@@ -13,6 +13,7 @@ import english from './strings/english';
 import exam from './strings/exam';
 import flashcards from './strings/flashcards';
 import oral from './strings/oral';
+import path from './strings/path';
 import settings from './strings/settings';
 
 export type Lang = 'en' | 'es';
@@ -22,7 +23,7 @@ export interface StringModule {
   es: Record<string, string>;
 }
 
-const MODULES: StringModule[] = [common, dashboard, flashcards, exam, oral, bank, settings, english];
+const MODULES: StringModule[] = [common, dashboard, flashcards, exam, oral, bank, settings, english, path];
 
 const DICTS: Record<Lang, Record<string, string>> = { en: {}, es: {} };
 for (const mod of MODULES) {

@@ -85,6 +85,8 @@ export interface StudySettings {
   dailyGoal: number;
   /** Text size multiplier (1 = normal). */
   fontScale: number;
+  /** Interview date YYYY-MM-DD ('' = not set). */
+  interviewDate: string;
 }
 
 /** Per-sentence practice record for the English test (keyed by sentence id). */
@@ -109,9 +111,27 @@ export interface PersistedState {
   activity: Record<string, number>;
   /** English test practice (optional for data saved by older versions). */
   english?: EnglishProgress;
+  /** Learning path progress (optional for data saved by older versions). */
+  path?: PathProgressState;
 }
 
-export type AppView = 'dashboard' | 'flashcards' | 'exam' | 'oral' | 'english' | 'bank';
+/** Learning path progress: lesson and unit ids include the test version. */
+export interface PathProgressState {
+  lessonsDone: Record<string, string>;
+  unitsPassed: Record<string, string>;
+  reviewDoneOn?: string;
+}
+
+export type AppView =
+  | 'dashboard'
+  | 'path'
+  | 'flashcards'
+  | 'exam'
+  | 'oral'
+  | 'english'
+  | 'bank'
+  | 'audio'
+  | 'more';
 
 export interface AnswerMatchResult {
   isMatch: boolean;
