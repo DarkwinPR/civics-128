@@ -243,7 +243,7 @@ export function mountEnglishMockInterview(
     const allGood = Boolean(readingPassed && writingPassed);
     return `
       <div class="mock-intro">
-        ${mascotSvg(allGood ? 'cheer' : 'think', 110)}
+        ${mascotSvg(allGood ? 'flag' : 'stand', 110)}
         <h2>${escapeHtml(allGood ? t('mock.doneGreat') : t('mock.doneKeepGoing'))}</h2>
         <ul class="mock-results">
           ${resultRow(t('mock.resultN400'), true, t('mock.resultN400Detail', { n: n400Answered, total: run.n400.length }))}

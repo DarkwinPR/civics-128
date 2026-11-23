@@ -106,7 +106,7 @@ export function renderDashboardView(
     <div class="home-layout">
     <h1 id="main-heading" class="visually-hidden" tabindex="-1">${escapeHtml(t('title.dashboard'))}</h1>
     <section class="home-hello" aria-label="${escapeHtml(greeting)}">
-      ${mascotSvg(todayCount >= goal ? 'cheer' : 'happy', 104)}
+      ${mascotSvg(todayCount >= goal ? 'flag' : 'wave', 124)}
       <p class="home-bubble"><strong>${escapeHtml(greeting)}</strong><br />${escapeHtml(nextText)}${todayCount >= goal ? ` ${escapeHtml(t('home.goalDone'))}` : ''}</p>
     </section>
     <button type="button" class="btn btn--primary home-cta" data-go="path">${escapeHtml(t('dashboard.studyToday'))}</button>

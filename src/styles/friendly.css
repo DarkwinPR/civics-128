@@ -464,7 +464,8 @@ h3 {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .mascot--cheer {
+  .mascot--flag,
+  .mascot--wave {
     animation: mascot-hop 0.9s ease-out 1;
   }
 }

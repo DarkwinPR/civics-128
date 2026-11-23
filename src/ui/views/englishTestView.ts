@@ -202,7 +202,7 @@ export function mountEnglishTestView(
     showWelcome
       ? `
       <section class="english-welcome" aria-labelledby="english-welcome-heading">
-        ${mascotSvg('happy', 72)}
+        ${mascotSvg('wave', 72)}
         <div>
           <h2 id="english-welcome-heading">${escapeHtml(t('english.welcomeTitle'))}</h2>
           <p>${escapeHtml(t('english.welcomeBody'))}</p>

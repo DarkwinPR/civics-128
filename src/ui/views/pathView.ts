@@ -237,7 +237,7 @@ export function mountPathView(container: HTMLElement, callbacks: PathCallbacks):
             <h2 id="unit-${u}-title">${escapeHtml(sectionTitle(unit.section, lang()))}</h2>
             <p class="path-unit-meta">${escapeHtml(t('path.unitMeta', { q: unit.questionIds.length, done, total: unit.lessons.length }))}</p>
           </div>
-          ${open && !complete ? mascotSvg('happy', 64) : complete ? '<span class="path-unit-trophy" aria-hidden="true">🏆</span>' : ''}
+          ${open && !complete ? mascotSvg('stand', 76) : complete ? '<span class="path-unit-trophy" aria-hidden="true">🏆</span>' : ''}
         </header>
         ${
           open && !complete && !checkpointReady
@@ -412,7 +412,7 @@ export function mountPathView(container: HTMLElement, callbacks: PathCallbacks):
 
   const celebration = (emoji: string, title: string, lines: string[], actions: string) => `
     <div class="lesson-done" role="status">
-      ${emoji === '🌱' ? mascotSvg('think', 120) : mascotSvg('cheer', 120)}
+      ${emoji === '🌱' ? mascotSvg('stand', 120) : mascotSvg('flag', 120)}
       <h1 id="main-heading" tabindex="-1">${escapeHtml(title)}</h1>
       ${lines.map((l) => `<p>${escapeHtml(l)}</p>`).join('')}
       <div class="card-action-group" style="justify-content:center;">${actions}</div>
