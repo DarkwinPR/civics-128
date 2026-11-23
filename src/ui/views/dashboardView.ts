@@ -8,12 +8,22 @@ import {
   getTestVersion,
   isDynamicUnconfigured,
 } from '../../domain/questions';
-import { locale, t } from '../../i18n';
+import { getLang, locale, t } from '../../i18n';
+import {
+  buildPath,
+  buildStudyPlan,
+  countLessonsDone,
+  findNextStep,
+  sectionTitle,
+  stepsRemaining,
+} from '../../domain/learningPath';
+import { mascotSvg } from '../mascot';
 import type { AppView, PersistedState } from '../../domain/types';
 import { READING_SENTENCES, WRITING_SENTENCES } from '../../domain/englishTest';
 import {
   countEnglishMastered,
   getMostMissed,
+  getPathProgress,
   getQuestionProgress,
   getStreak,
   getTodayCount,
@@ -60,7 +70,6 @@ export function renderDashboardView(
   const streak = getStreak(state);
   const todayCount = getTodayCount(state);
   const goal = state.settings.dailyGoal;
-  const goalPct = Math.min(100, Math.round((todayCount / goal) * 100));
   const dueCount = CIVICS_QUESTIONS.filter((q) =>
     isDueForReview(getQuestionProgress(state, q.id)),
   ).length;
@@ -78,39 +87,63 @@ export function renderDashboardView(
     return { category: cat, done, total: items.length };
   });
 
-  container.innerHTML = `
-    <section class="hero-banner" aria-labelledby="main-heading">
-      <div>
-        <p class="hero-eyebrow"><span class="hero-stars" aria-hidden="true">★ ★ ★</span> ${escapeHtml(t('dashboard.eyebrow', { year: version }))}</p>
-        <h1 id="main-heading" tabindex="-1">${t('dashboard.heroTitle', { total: `<span class="hero-highlight">${total}</span>` })}</h1>
-        <p class="view-lead">
-          ${
-            version === '2008'
-              ? escapeHtml(t('dashboard.lead2008'))
-              : escapeHtml(t('dashboard.lead2025'))
-          }
-          ${escapeHtml(t('dashboard.leadTrain'))}
-        </p>
-        <div class="hero-actions">
-          <button type="button" class="btn btn--primary btn--lg" data-go="path">
-            ${ICONS.play} ${escapeHtml(t('dashboard.studyToday'))}
-          </button>
-          <button type="button" class="btn btn--secondary btn--lg" data-go="exam">
-            ${ICONS.target} ${escapeHtml(t('dashboard.startExam'))}
-          </button>
-          <button type="button" class="btn btn--secondary btn--lg" data-go="oral">
-            ${ICONS.mic} ${escapeHtml(t('dashboard.oralCoach'))}
-          </button>
-        </div>
-      </div>
+  const allUnits = buildPath(CIVICS_QUESTIONS, version);
+  const pathProgress = getPathProgress(state);
+  const next = findNextStep(allUnits, pathProgress);
+  const nextUnit = next ? allUnits[next.unitIndex] : undefined;
+  const plan = buildStudyPlan(state.settings.interviewDate, stepsRemaining(allUnits, pathProgress));
+  const hour = new Date().getHours();
+  const greeting = t(hour < 12 ? 'home.morning' : hour < 19 ? 'home.afternoon' : 'home.evening');
+  const nextText = !next
+    ? t('home.pathDone')
+    : next.lessonIndex === -1
+      ? t('home.nextExam', { unit: sectionTitle(nextUnit!.section, getLang()) })
+      : countLessonsDone(allUnits, pathProgress) === 0
+        ? t('home.firstLesson')
+        : t('home.nextLesson', { n: next.lessonIndex + 1, unit: sectionTitle(nextUnit!.section, getLang()) });
 
-      <div class="readiness-ring" style="--pct:${readinessPct}" aria-label="${escapeHtml(t('dashboard.readinessAria', { pct: readinessPct, total }))}">
-        <div class="readiness-ring-inner">
-          <span class="readiness-value">${readinessPct}%</span>
-          <span class="readiness-caption">${escapeHtml(t('dashboard.masteredCaption'))}</span>
-        </div>
-      </div>
+  container.innerHTML = `
+    <div class="home-layout">
+    <h1 id="main-heading" class="visually-hidden" tabindex="-1">${escapeHtml(t('title.dashboard'))}</h1>
+    <section class="home-hello" aria-label="${escapeHtml(greeting)}">
+      ${mascotSvg(todayCount >= goal ? 'cheer' : 'happy', 104)}
+      <p class="home-bubble"><strong>${escapeHtml(greeting)}</strong><br />${escapeHtml(nextText)}${todayCount >= goal ? ` ${escapeHtml(t('home.goalDone'))}` : ''}</p>
     </section>
+    <button type="button" class="btn btn--primary home-cta" data-go="path">${escapeHtml(t('dashboard.studyToday'))}</button>
+
+    <div class="home-tiles">
+      <div class="home-tile">
+        <span class="home-tile-value"><svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 4 6 6 6 11a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3-1-5 1-8z"/></svg>${streak}</span>
+        <span>${escapeHtml(streak === 1 ? t('dashboard.streakOne') : t('dashboard.streakMany'))}</span>
+      </div>
+      <div class="home-tile">
+        <span class="home-tile-value">${readinessPct}%</span>
+        <span>${escapeHtml(t('home.ready'))}</span>
+      </div>
+    </div>
+
+    ${
+      plan
+        ? `<div class="path-plan path-plan--${plan.status}"><span aria-hidden="true">📅</span><p>${escapeHtml(
+            plan.status === 'done'
+              ? t('path.planDone', { days: plan.daysLeft })
+              : plan.status === 'past'
+                ? t('path.planPast')
+                : t(`path.plan.${plan.status}`, { days: plan.daysLeft, steps: plan.stepsLeft, perDay: plan.perDay }),
+          )}</p></div>`
+        : `<div class="path-plan path-plan--empty"><span aria-hidden="true">📅</span><p>${escapeHtml(t('path.planAsk'))}</p><button type="button" class="btn btn--secondary" id="dashboard-plan-settings">${escapeHtml(t('path.planSet'))}</button></div>`
+    }
+
+    <div class="home-tiles">
+      <div class="home-tile">
+        <span class="home-tile-value">${Math.min(todayCount, goal)}/${goal}</span>
+        <span>${escapeHtml(todayCount >= goal ? t('dashboard.goalReached') : t('dashboard.questionsToday'))}</span>
+      </div>
+      <button type="button" class="home-tile home-tile--action" id="smart-review-btn" ${dueCount === 0 ? 'disabled' : ''}>
+        <span class="home-tile-value">${dueCount}</span>
+        <span>${escapeHtml(dueCount > 0 ? t('home.dueTap') : t('dashboard.dueLabel'))}</span>
+      </button>
+    </div>
 
     ${
       unconfiguredStateCount > 0
@@ -126,40 +159,9 @@ export function renderDashboardView(
     `
         : ''
     }
+    </div>
 
-    <section class="today-strip" aria-label="${escapeHtml(t('dashboard.todayAria'))}">
-      <div class="today-card today-card--streak">
-        <span class="today-emoji" aria-hidden="true">🔥</span>
-        <div>
-          <span class="today-value">${streak}</span>
-          <span class="today-label">${escapeHtml(streak === 1 ? t('dashboard.streakOne') : t('dashboard.streakMany'))}</span>
-        </div>
-      </div>
-      <div class="today-card today-card--goal">
-        <div class="mini-ring" style="--pct:${goalPct}" aria-hidden="true"><span>${goalPct}%</span></div>
-        <div>
-          <span class="today-value">${Math.min(todayCount, goal)} / ${goal}</span>
-          <span class="today-label">${escapeHtml(todayCount >= goal ? t('dashboard.goalReached') : t('dashboard.questionsToday'))}</span>
-        </div>
-      </div>
-      <div class="today-card today-card--due">
-        <div>
-          <span class="today-value">${dueCount}</span>
-          <span class="today-label">${escapeHtml(t('dashboard.dueLabel'))}</span>
-        </div>
-        <button type="button" class="btn ${dueCount > 0 ? 'btn--primary' : 'btn--secondary'}" id="smart-review-btn" ${dueCount === 0 ? 'disabled' : ''}>
-          ${escapeHtml(t('dashboard.reviewNow'))}
-        </button>
-      </div>
-      <a class="today-card today-card--share" href="${shareHref}" target="_blank" rel="noopener noreferrer">
-        <span class="today-emoji" aria-hidden="true">💬</span>
-        <div>
-          <span class="today-label today-label--strong">${escapeHtml(t('share.whatsapp'))}</span>
-          <span class="today-label">${escapeHtml(t('dashboard.shareHelp'))}</span>
-        </div>
-      </a>
-    </section>
-
+    <h2 class="home-section-title">${escapeHtml(t('home.progressTitle'))}</h2>
     <section class="stats-grid" aria-label="${escapeHtml(t('dashboard.statsAria'))}">
       <div class="stat-card stat-card--blue">
         <span class="stat-icon">${ICONS.target}</span>
@@ -290,6 +292,7 @@ export function renderDashboardView(
         }
       </section>
     </div>
+    <p class="home-share"><a class="btn btn--secondary" href="${shareHref}" target="_blank" rel="noopener noreferrer">💬 ${escapeHtml(t('share.whatsapp'))}</a> <span class="field-hint">${escapeHtml(t('dashboard.shareHelp'))}</span></p>
   `;
 
   container.querySelectorAll<HTMLButtonElement>('[data-go]').forEach((btn) => {
@@ -300,6 +303,10 @@ export function renderDashboardView(
   });
 
   container.querySelector('#dashboard-open-settings')?.addEventListener('click', () => {
+    callbacks.onOpenSettings();
+  });
+
+  container.querySelector('#dashboard-plan-settings')?.addEventListener('click', () => {
     callbacks.onOpenSettings();
   });
 

@@ -1,8 +1,14 @@
+import '@fontsource/nunito/latin-400.css';
+import '@fontsource/nunito/latin-600.css';
+import '@fontsource/nunito/latin-700.css';
+import '@fontsource/nunito/latin-800.css';
+import '@fontsource/nunito/latin-900.css';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/components.css';
 import './styles/views.css';
 import './styles/vibrant.css';
+import './styles/friendly.css';
 
 import { REPO_URL, reportIssueUrl } from './config';
 import { setTestVersion } from './domain/questions';

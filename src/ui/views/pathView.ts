@@ -53,6 +53,7 @@ import {
 } from '../../services/storage';
 import { announce } from '../announcer';
 import { escapeHtml, ICONS } from '../dom';
+import { mascotSvg } from '../mascot';
 import { renderTranslationToggle } from '../translation';
 
 export interface PathCallbacks {
@@ -83,6 +84,7 @@ interface Feedback {
 }
 
 const REVIEW_SIZE = 10;
+const LOCK_ICON = '<svg aria-hidden="true" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 
 /**
  * The lesson in progress survives re-renders of the app shell (language switch,
@@ -219,7 +221,7 @@ export function mountPathView(container: HTMLElement, callbacks: PathCallbacks):
           <li class="path-node path-node--${st}" style="--offset:${[0, 1, 2, 1][l % 4]}">
             <button type="button" class="path-node-btn" data-path="lesson" data-unit="${u}" data-lesson="${l}"
               ${st === 'locked' ? 'disabled' : ''} aria-label="${escapeHtml(`${label} · ${t(`path.state.${st}`)}`)}">
-              <span aria-hidden="true">${st === 'done' ? '✓' : st === 'locked' ? '🔒' : '★'}</span>
+              <span aria-hidden="true">${st === 'done' ? '✓' : st === 'locked' ? LOCK_ICON : '★'}</span>
             </button>
             <span class="path-node-label">${escapeHtml(label)}${st === 'next' ? ` <strong>${escapeHtml(t('path.startHere'))}</strong>` : ''}</span>
           </li>`;
@@ -229,25 +231,26 @@ export function mountPathView(container: HTMLElement, callbacks: PathCallbacks):
     const checkpointState = complete ? 'done' : checkpointReady ? 'next' : 'locked';
     return `
       <section class="path-unit ${open ? '' : 'is-locked'} ${complete ? 'is-complete' : ''}" aria-labelledby="unit-${u}-title">
-        <header class="path-unit-head">
+        <header class="path-unit-banner">
           <div>
             <p class="path-unit-eyebrow">${escapeHtml(t('path.unitLabel', { n: u + 1 }))} · ${escapeHtml(t(`category.${unit.category}`))}</p>
             <h2 id="unit-${u}-title">${escapeHtml(sectionTitle(unit.section, lang()))}</h2>
             <p class="path-unit-meta">${escapeHtml(t('path.unitMeta', { q: unit.questionIds.length, done, total: unit.lessons.length }))}</p>
           </div>
-          ${
-            open && !complete && !checkpointReady
-              ? `<button type="button" class="btn btn--ghost path-skip" data-path="checkpoint" data-unit="${u}">${escapeHtml(t('path.skipTest'))}</button>`
-              : ''
-          }
+          ${open && !complete ? mascotSvg('happy', 64) : complete ? '<span class="path-unit-trophy" aria-hidden="true">🏆</span>' : ''}
         </header>
+        ${
+          open && !complete && !checkpointReady
+            ? `<button type="button" class="btn btn--ghost path-skip" data-path="checkpoint" data-unit="${u}">${escapeHtml(t('path.skipTest'))}</button>`
+            : ''
+        }
         ${unconfigured && open ? `<p class="notice notice--gold path-unit-note">${escapeHtml(t('path.unconfigured', { n: unconfigured }))} <button type="button" class="btn btn--ghost" data-path="settings">${escapeHtml(t('path.planSet'))}</button></p>` : ''}
         <ol class="path-nodes" role="list">
           ${nodes}
           <li class="path-node path-node--checkpoint path-node--${checkpointState}" style="--offset:1">
             <button type="button" class="path-node-btn" data-path="checkpoint" data-unit="${u}" ${checkpointState === 'next' ? '' : 'disabled'}
               aria-label="${escapeHtml(`${t('path.checkpoint')} · ${t(`path.state.${checkpointState}`)}`)}">
-              <span aria-hidden="true">${complete ? '🏆' : checkpointState === 'next' ? '🏁' : '🔒'}</span>
+              <span aria-hidden="true">${complete ? '🏆' : checkpointState === 'next' ? '🏁' : LOCK_ICON}</span>
             </button>
             <span class="path-node-label">${escapeHtml(t('path.checkpoint'))}${checkpointState === 'next' ? ` <strong>${escapeHtml(t('path.startHere'))}</strong>` : ''}</span>
           </li>
@@ -409,7 +412,7 @@ export function mountPathView(container: HTMLElement, callbacks: PathCallbacks):
 
   const celebration = (emoji: string, title: string, lines: string[], actions: string) => `
     <div class="lesson-done" role="status">
-      <p class="lesson-done-emoji" aria-hidden="true">${emoji}</p>
+      ${emoji === '🌱' ? mascotSvg('think', 120) : mascotSvg('cheer', 120)}
       <h1 id="main-heading" tabindex="-1">${escapeHtml(title)}</h1>
       ${lines.map((l) => `<p>${escapeHtml(l)}</p>`).join('')}
       <div class="card-action-group" style="justify-content:center;">${actions}</div>
