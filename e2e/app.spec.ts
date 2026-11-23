@@ -10,9 +10,37 @@ const errorsOf = (page: Page) => {
   return errors;
 };
 
+const IN_MORE = ['flashcards', 'oral', 'bank', 'audio'];
+
 const goTo = async (page: Page, view: string) => {
-  await page.locator(`.nav-btn[data-view="${view}"]`).click();
+  if (IN_MORE.includes(view)) {
+    await page.locator('.nav-btn[data-view="more"]').click();
+    await page.locator(`.more-card[data-go="${view}"]`).click();
+  } else {
+    await page.locator(`.nav-btn[data-view="${view}"]`).click();
+  }
   await expect(page.locator('#main-heading')).toBeVisible();
+};
+
+/** Plays a path lesson to the end, learning each answer from the feedback. */
+const playLesson = async (page: Page) => {
+  const known: Record<string, string> = {};
+  for (let i = 0; i < 120; i++) {
+    if (await page.locator('.lesson-done').isVisible()) return;
+    const q = ((await page.locator('.lesson-card .question-stem').textContent().catch(() => '')) ?? '').trim();
+    if (await page.locator('#lesson-continue').isVisible()) {
+      known[q] = ((await page.locator('.lesson-feedback .easiest-answer span[lang="en"]').textContent()) ?? '').trim();
+      await page.locator('#lesson-continue').click();
+    } else if (await page.locator('.choice-btn').first().isVisible()) {
+      const opts = await page.locator('.choice-btn').allTextContents();
+      const idx = known[q] ? Math.max(0, opts.findIndex((o) => o.includes(known[q]!))) : 0;
+      await page.locator('.choice-btn').nth(idx).click();
+    } else if (await page.locator('#path-input').isVisible()) {
+      await page.locator('#path-input').fill(known[q] || 'no idea');
+      await page.locator('#path-input').press('Enter');
+    }
+  }
+  throw new Error('lesson did not finish');
 };
 
 test.beforeEach(async ({ page }) => {
@@ -34,7 +62,7 @@ test('dashboard loads and language switch is remembered', async ({ page }) => {
 test('every screen opens without errors and has no serious accessibility problems', async ({ page }) => {
   const errors = errorsOf(page);
   await page.goto('./');
-  for (const view of ['dashboard', 'flashcards', 'exam', 'oral', 'english', 'bank']) {
+  for (const view of ['dashboard', 'path', 'exam', 'english', 'more', 'flashcards', 'oral', 'bank', 'audio']) {
     await goTo(page, view);
     await page.waitForTimeout(250); // view transition
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
@@ -161,4 +189,56 @@ test('dashboard lists the questions missed in a mock exam', async ({ page }) => 
   await expect(page.locator('.missed-list li').first()).toBeVisible();
   await page.locator('#drill-missed-btn').click();
   await expect(page.locator('[data-filter="missed"]')).toBeVisible();
+});
+
+test('learning path: finish a lesson, then the next one opens', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = errorsOf(page);
+  await page.goto('./');
+  await page.locator('[data-go="path"]').first().click();
+  await expect(page.locator('[data-path="lesson"][data-unit="0"][data-lesson="1"]')).toBeDisabled();
+  await page.locator('[data-path="lesson"][data-unit="0"][data-lesson="0"]').click();
+  await playLesson(page);
+  await page.locator('[data-path="map"]').click();
+  await expect(page.locator('[data-path="lesson"][data-unit="0"][data-lesson="1"]')).toBeEnabled();
+  const progress = await page.evaluate(() => JSON.parse(localStorage.getItem('civics128:state:v1') ?? '{}').path);
+  expect(Object.keys(progress.lessonsDone)).toHaveLength(1);
+  // The lesson recorded memory answers for spaced repetition.
+  const state = await page.evaluate(() => JSON.parse(localStorage.getItem('civics128:state:v1') ?? '{}'));
+  expect(Object.keys(state.progress).length).toBeGreaterThan(0);
+  expect(errors).toEqual([]);
+});
+
+test('learning path: a section exam can be taken to skip ahead', async ({ page }) => {
+  await page.goto('./');
+  await goTo(page, 'path');
+  await page.locator('.path-skip').first().click();
+  // Answer everything with "I don't remember": the exam is not passed.
+  for (let i = 0; i < 12; i++) {
+    if (await page.locator('.lesson-done').isVisible()) break;
+    await page.locator('[data-path="dont-know"]').click();
+    await page.locator('#lesson-continue').click();
+  }
+  await expect(page.locator('.lesson-done')).toBeVisible();
+  await expect(page.locator('.missed-review li').first()).toBeVisible();
+  await page.locator('[data-path="map"]').click();
+  await expect(page.locator('[data-path="lesson"][data-unit="1"][data-lesson="0"]')).toBeDisabled();
+});
+
+test('learning path: interview date gives a daily plan', async ({ page }) => {
+  await page.goto('./');
+  await page.locator('#open-settings-btn').click();
+  const date = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
+  await page.locator('#interview-date').fill(date);
+  await page.locator('#interview-date').dispatchEvent('change');
+  await page.locator('[data-close-dialog]').click();
+  await goTo(page, 'path');
+  await expect(page.locator('.path-plan--ok, .path-plan--tight')).toBeVisible();
+});
+
+test('listen mode shows the current section', async ({ page }) => {
+  await page.goto('./');
+  await goTo(page, 'audio');
+  await expect(page.locator('.audio-card .question-stem')).toBeVisible();
+  await expect(page.locator('[data-audio="play"]')).toBeVisible();
 });

@@ -10,11 +10,17 @@ import type { AppView, PersistedState } from './domain/types';
 import { applyStaticTranslations, getLang, onLangChange, setLang, t } from './i18n';
 import { registerServiceWorker } from './services/pwa';
 import { mountEnglishTestView } from './ui/views/englishTestView';
+import { mountAudioView } from './ui/views/audioView';
+import { renderMoreView } from './ui/views/moreView';
+import { mountPathView } from './ui/views/pathView';
 import { closeDialogSmoothly, enhanceModalDialog } from './services/dialogHelper';
 import { isSpeechSynthesisSupported } from './services/speech';
 import {
   addExamRecord,
   loadState,
+  markLessonDone,
+  markReviewDone,
+  markUnitPassed,
   recordEnglishAttempt,
   recordPracticeResult,
   resetProgressOnly,
@@ -112,7 +118,8 @@ if (isSpeechSynthesisSupported()) {
 
 function updateNavActive(): void {
   document.querySelectorAll<HTMLButtonElement>('.nav-btn[data-view]').forEach((btn) => {
-    if (btn.dataset.view === currentView) {
+    const navView = ['flashcards', 'oral', 'bank', 'audio'].includes(currentView) ? 'more' : currentView;
+    if (btn.dataset.view === navView) {
       btn.setAttribute('aria-current', 'page');
       // On phones the tab row scrolls sideways; keep the active tab visible.
       btn.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -148,6 +155,37 @@ function mountActiveView(): void {
       },
       onOpenSettings: openSettings,
     });
+    return;
+  }
+
+  if (currentView === 'path') {
+    cleanupCurrentView = mountPathView(mainEl, {
+      getState: () => appState,
+      onRecordResult: (questionId, correct) => {
+        appState = recordPracticeResult(appState, questionId, correct);
+      },
+      onLessonDone: (lessonId) => {
+        appState = markLessonDone(appState, lessonId);
+      },
+      onUnitPassed: (unitId, lessonIds) => {
+        appState = markUnitPassed(appState, unitId, lessonIds);
+      },
+      onReviewDone: () => {
+        appState = markReviewDone(appState);
+      },
+      onNavigate: navigateTo,
+      onOpenSettings: openSettings,
+    });
+    return;
+  }
+
+  if (currentView === 'audio') {
+    cleanupCurrentView = mountAudioView(mainEl, { getState: () => appState });
+    return;
+  }
+
+  if (currentView === 'more') {
+    renderMoreView(mainEl, navigateTo);
     return;
   }
 

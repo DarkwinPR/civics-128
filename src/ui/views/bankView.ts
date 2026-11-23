@@ -1,9 +1,11 @@
+import { easiestAnswers, joinAnswers } from '../../domain/learningPath';
 import {
   CATEGORIES,
   CIVICS_QUESTIONS,
   displayNumber,
   getEffectiveAnswers,
   getTestVersion,
+  isDynamicUnconfigured,
 } from '../../domain/questions';
 import type { CivicsCategory, MasteryStatus, PersistedState } from '../../domain/types';
 import { getQuestionProgress } from '../../services/storage';
@@ -91,6 +93,11 @@ export function mountBankView(container: HTMLElement, callbacks: BankCallbacks):
 
             <h2 class="bank-card-question">${escapeHtml(q.question)}</h2>
 
+            ${
+              answers.length > q.requiredCount && !isDynamicUnconfigured(q, appState.settings.officials)
+                ? `<p class="easiest-answer easiest-answer--small"><span class="easiest-label">💡 ${escapeHtml(t('path.easiest'))}</span> ${escapeHtml(joinAnswers(easiestAnswers(q, appState.settings.officials)))}</p>`
+                : ''
+            }
             <ul class="bank-card-answers">
               ${answers.map((ans) => `<li>${escapeHtml(ans)}</li>`).join('')}
             </ul>

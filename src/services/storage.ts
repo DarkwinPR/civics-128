@@ -3,6 +3,7 @@ import type {
   EnglishProgress,
   EnglishSentenceProgress,
   ExamRecord,
+  PathProgressState,
   MasteryStatus,
   OfficialOverrides,
   PersistedState,
@@ -22,6 +23,7 @@ const DEFAULT_SETTINGS: StudySettings = {
   testVersion: '2025',
   dailyGoal: 10,
   fontScale: 1,
+  interviewDate: '',
 };
 
 function defaultState(): PersistedState {
@@ -48,6 +50,55 @@ function sanitizeEnglish(value: unknown): EnglishProgress {
     writing: asRecord(raw.writing),
     interview: asRecord(raw.interview),
   };
+}
+
+const asDates = (value: unknown): Record<string, string> =>
+  value && typeof value === 'object' && !Array.isArray(value)
+    ? Object.fromEntries(
+        Object.entries(value as Record<string, unknown>).filter(([, v]) => typeof v === 'string'),
+      ) as Record<string, string>
+    : {};
+
+function sanitizePath(value: unknown): PathProgressState {
+  const raw = (value && typeof value === 'object' ? value : {}) as Partial<PathProgressState>;
+  return {
+    lessonsDone: asDates(raw.lessonsDone),
+    unitsPassed: asDates(raw.unitsPassed),
+    ...(typeof raw.reviewDoneOn === 'string' ? { reviewDoneOn: raw.reviewDoneOn } : {}),
+  };
+}
+
+export function getPathProgress(state: PersistedState): PathProgressState {
+  return state.path ?? { lessonsDone: {}, unitsPassed: {} };
+}
+
+function savePath(state: PersistedState, path: PathProgressState): PersistedState {
+  const next: PersistedState = { ...state, path };
+  saveState(next);
+  return next;
+}
+
+export function markLessonDone(state: PersistedState, lessonId: string, now = new Date()): PersistedState {
+  const path = getPathProgress(state);
+  return savePath(state, { ...path, lessonsDone: { ...path.lessonsDone, [lessonId]: now.toISOString() } });
+}
+
+/** Passing a unit checkpoint also completes all of its lessons (skipping ahead is allowed). */
+export function markUnitPassed(
+  state: PersistedState,
+  unitId: string,
+  lessonIds: string[],
+  now = new Date(),
+): PersistedState {
+  const path = getPathProgress(state);
+  const stamp = now.toISOString();
+  const lessonsDone = { ...path.lessonsDone };
+  for (const id of lessonIds) lessonsDone[id] ??= stamp;
+  return savePath(state, { ...path, lessonsDone, unitsPassed: { ...path.unitsPassed, [unitId]: stamp } });
+}
+
+export function markReviewDone(state: PersistedState, now = new Date()): PersistedState {
+  return savePath(state, { ...getPathProgress(state), reviewDoneOn: localDayKey(now) });
 }
 
 export function getEnglishProgress(state: PersistedState): EnglishProgress {
@@ -108,10 +159,16 @@ function fromParsed(parsed: Partial<PersistedState>): PersistedState {
         parsed.settings.fontScale <= 1.5
           ? parsed.settings.fontScale
           : DEFAULT_SETTINGS.fontScale,
+      interviewDate:
+        typeof parsed.settings?.interviewDate === 'string' &&
+        /^\d{4}-\d{2}-\d{2}$/.test(parsed.settings.interviewDate)
+          ? parsed.settings.interviewDate
+          : '',
     },
     activity:
       parsed.activity && typeof parsed.activity === 'object' ? parsed.activity : {},
     english: sanitizeEnglish(parsed.english),
+    path: sanitizePath(parsed.path),
   };
 }
 
@@ -311,6 +368,7 @@ export function resetProgressOnly(state: PersistedState): PersistedState {
     settings: state.settings,
     activity: {},
     english: { reading: {}, writing: {}, interview: {} },
+    path: { lessonsDone: {}, unitsPassed: {} },
   };
   saveState(next);
   return next;

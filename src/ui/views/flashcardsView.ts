@@ -7,6 +7,7 @@ import {
   isDynamicUnconfigured,
 } from '../../domain/questions';
 import { shuffleArray } from '../../domain/examEngine';
+import { easiestAnswers, joinAnswers } from '../../domain/learningPath';
 import type { CivicsCategory, CivicsQuestion, MasteryStatus, PersistedState } from '../../domain/types';
 import { getMostMissed, getQuestionProgress, isDueForReview } from '../../services/storage';
 import { renderReportLink, renderTranslationToggle } from '../translation';
@@ -477,6 +478,11 @@ export function mountFlashcardsView(
                       : ''
                   }
                 </div>
+                ${
+                  effectiveAnswers.length > question.requiredCount && !needsCustomState
+                    ? `<p class="easiest-answer"><span class="easiest-label">💡 ${escapeHtml(t('path.easiest'))}</span> <span lang="en">${escapeHtml(joinAnswers(easiestAnswers(question, appState.settings.officials)))}</span></p>`
+                    : ''
+                }
                 <ul class="answer-list">
                   ${effectiveAnswers.map((ans) => `<li>${escapeHtml(ans)}</li>`).join('')}
                 </ul>

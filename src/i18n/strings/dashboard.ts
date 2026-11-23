@@ -13,6 +13,7 @@ const strings: StringModule = {
     'dashboard.leadTrain':
       'Train with flashcards, realistic mock exams, voice coaching and English test practice.',
     'dashboard.startExam': 'Start Mock Exam',
+    'dashboard.studyToday': 'Study today',
     'dashboard.oralCoach': 'Oral Voice Coach',
     'dashboard.studyFlashcards': 'Study Flashcards',
     'dashboard.readinessAria': '{pct}% of {total} questions mastered',
@@ -68,6 +69,7 @@ const strings: StringModule = {
     'dashboard.leadTrain':
       'Estudia con tarjetas, exámenes de práctica realistas, práctica con voz y práctica del examen de inglés.',
     'dashboard.startExam': 'Empezar examen de práctica',
+    'dashboard.studyToday': 'Estudiar hoy',
     'dashboard.oralCoach': 'Práctica oral con voz',
     'dashboard.studyFlashcards': 'Estudiar con tarjetas',
     'dashboard.readinessAria': '{pct}% de las {total} preguntas dominadas',
