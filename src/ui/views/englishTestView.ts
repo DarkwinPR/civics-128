@@ -30,6 +30,7 @@ import { getEnglishProgress, type EnglishPart } from '../../services/storage';
 import { announce } from '../announcer';
 import { escapeHtml, ICONS } from '../dom';
 import { mountEnglishMockInterview } from './englishMockInterview';
+import { mascotSvg } from '../mascot';
 
 type EnglishTab = 'reading' | 'writing' | 'interview' | 'mock' | 'vocab';
 
@@ -201,7 +202,7 @@ export function mountEnglishTestView(
     showWelcome
       ? `
       <section class="english-welcome" aria-labelledby="english-welcome-heading">
-        <div class="english-welcome-icon" aria-hidden="true">🌱</div>
+        ${mascotSvg('wave', 72)}
         <div>
           <h2 id="english-welcome-heading">${escapeHtml(t('english.welcomeTitle'))}</h2>
           <p>${escapeHtml(t('english.welcomeBody'))}</p>

@@ -20,6 +20,7 @@ import {
 import type { EnglishPart } from '../../services/storage';
 import { announce } from '../announcer';
 import { escapeHtml, ICONS } from '../dom';
+import { mascotSvg } from '../mascot';
 
 /**
  * A full run of the English part of the interview, with the official rules:
@@ -242,7 +243,7 @@ export function mountEnglishMockInterview(
     const allGood = Boolean(readingPassed && writingPassed);
     return `
       <div class="mock-intro">
-        <p class="mock-officer" aria-hidden="true">${allGood ? '🎉' : '🌱'}</p>
+        ${mascotSvg(allGood ? 'flag' : 'stand', 110)}
         <h2>${escapeHtml(allGood ? t('mock.doneGreat') : t('mock.doneKeepGoing'))}</h2>
         <ul class="mock-results">
           ${resultRow(t('mock.resultN400'), true, t('mock.resultN400Detail', { n: n400Answered, total: run.n400.length }))}

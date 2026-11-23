@@ -1,0 +1,802 @@
+/* ==========================================================================
+   Friendly theme — warm, calm and easy to read (design "A").
+   Loaded last: it retunes the tokens and softens the earlier layers without
+   changing their markup. Cream background, one rounded font, solid colours,
+   gentle "pressable" buttons, and a bottom tab bar on phones.
+   ========================================================================== */
+
+:root {
+  /* Light palette */
+  --bg-page-light: #fffaf2;
+  --bg-surface-light: #ffffff;
+  --bg-subtle-light: #f7f0e4;
+  --bg-elevated-light: #ffffff;
+  --border-light: #ece3d4;
+  --border-strong-light: #d6cab5;
+  --text-primary-light: #262a35;
+  --text-secondary-light: #474c59;
+  --text-muted-light: #665f53;
+  --brand-light: #2f5bd8;
+  --brand-hover-light: #2549b8;
+  --brand-soft-light: #e8eeff;
+  --crimson-light: #c22f4b;
+  --crimson-soft-light: #fde8ec;
+  --success-light: #1d8550;
+  --success-soft-light: #e2f5e9;
+  --gold-light: #8a5800;
+  --gold-soft-light: #fff0d4;
+  --focus-light: #2f5bd8;
+  --shadow-sm-light: 0 2px 0 #efe5d5;
+  --shadow-md-light: 0 3px 0 #ebdfcb, 0 10px 24px rgb(120 90 40 / 0.08);
+  --shadow-lg-light: 0 18px 40px rgb(80 60 30 / 0.16);
+
+  /* Dark palette: warm charcoal instead of navy */
+  --bg-page-dark: #16171b;
+  --bg-surface-dark: #202228;
+  --bg-subtle-dark: #2a2c33;
+  --bg-elevated-dark: #24262d;
+  --border-dark: #353843;
+  --border-strong-dark: #4a4e5b;
+  --text-primary-dark: #f3f1ec;
+  --text-secondary-dark: #d1cdc4;
+  --text-muted-dark: #aaa499;
+  --brand-dark: #93acff;
+  --brand-soft-dark: #26304f;
+  --brand-on-dark: #0f1630;
+  --success-dark: #6fdc9c;
+  --success-soft-dark: #1b3426;
+  --gold-dark: #f4c56a;
+  --gold-soft-dark: #3a2e14;
+  --crimson-dark: #ff8ea3;
+  --crimson-soft-dark: #3d1d24;
+  --shadow-sm-dark: 0 2px 0 #121317;
+  --shadow-md-dark: 0 3px 0 #111215, 0 10px 24px rgb(0 0 0 / 0.35);
+
+  /* Solid colours used for fills (buttons, path nodes) */
+  --fill-brand: #3a6df0;
+  --fill-brand-edge: #2a4fb8;
+  --fill-green: #46c37b;
+  --fill-green-edge: #2f9e63;
+  --fill-gold: #f6a623;
+  --fill-gold-edge: #d48a0c;
+  --fill-red: #e5546e;
+  --fill-red-edge: #bf3a53;
+
+  --font-sans: 'Nunito', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-sans);
+  --radius-md: 1rem;
+  --radius-lg: 1.35rem;
+
+  /* The old flag stripes are retired: only the logo keeps the stars. */
+  --flag-stripe: none;
+  --grad-brand: var(--fill-brand);
+  --grad-green: var(--fill-green);
+  --grad-red: var(--fill-red);
+  --grad-gold: var(--fill-gold);
+
+  --tabbar-height: 0px;
+}
+
+html {
+  font-size: 106.25%; /* 17px base: easier to read */
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-page);
+  background-image: none;
+}
+
+h1,
+h2,
+h3,
+.view-header h1,
+.hero-banner h1,
+.question-stem,
+.english-sentence,
+.stat-number,
+.hud-pill-value,
+.bank-card-question,
+.dialog-header h2,
+.result-banner h2 {
+  font-family: var(--font-sans);
+  letter-spacing: 0;
+}
+
+h1,
+.view-header h1 {
+  font-weight: 900;
+}
+
+h2,
+h3 {
+  font-weight: 800;
+}
+
+.view-header h1::after,
+.question-card::before,
+.stat-card::before,
+.stat-card::after,
+.mode-option-card::before,
+.site-footer::before,
+.dialog-header::after {
+  display: none;
+}
+
+.view-lead {
+  color: var(--text-secondary);
+}
+
+/* ---------- Header: one compact line ---------- */
+.site-header {
+  background-color: var(--bg-page);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  border-block-end: 1px solid var(--border);
+}
+
+.site-header::before {
+  display: none;
+}
+
+.header-inner {
+  padding-block: 0.6rem;
+}
+
+.brand-mark {
+  inline-size: 2.2rem;
+  block-size: 2.2rem;
+  padding: 0.35rem;
+  border-radius: 0.75rem;
+  background: var(--fill-brand);
+  color: #fff;
+  box-shadow: 0 3px 0 var(--fill-brand-edge);
+}
+
+.brand-title {
+  font-size: 1.3rem;
+  font-weight: 900;
+  background: none;
+  color: var(--text-primary);
+  -webkit-background-clip: initial;
+  background-clip: initial;
+}
+
+.brand-subtitle {
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.header-actions .icon-btn {
+  border-radius: 0.9rem;
+  background-color: var(--bg-subtle);
+  border-color: transparent;
+}
+
+/* ---------- Navigation ---------- */
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  border-radius: 0.9rem;
+}
+
+.nav-icon {
+  inline-size: 1.35rem;
+  block-size: 1.35rem;
+  flex: none;
+}
+
+.nav-btn:hover {
+  background-color: var(--bg-subtle);
+  color: var(--text-primary);
+  transform: none;
+}
+
+.nav-btn[aria-current='page'] {
+  background: var(--brand-soft);
+  color: var(--brand);
+  box-shadow: none;
+}
+
+/* Phones and small tablets: a fixed tab bar at the bottom, in thumb reach */
+@media (max-width: 900px) {
+  :root {
+    --tabbar-height: calc(4.4rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .primary-nav {
+    position: fixed;
+    inset-inline: 0;
+    inset-block-end: 0;
+    z-index: 30;
+    order: initial;
+    flex-basis: auto;
+    margin: 0;
+    padding: 0.35rem 0.4rem calc(0.4rem + env(safe-area-inset-bottom, 0px));
+    border-block-start: 1px solid var(--border);
+    background-color: var(--bg-surface);
+    box-shadow: 0 -4px 18px rgb(80 60 30 / 0.06);
+    overflow: visible;
+    mask-image: none;
+  }
+
+  .nav-list {
+    inline-size: 100%;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.15rem;
+    padding: 0;
+  }
+
+  .nav-btn {
+    inline-size: 100%;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.15rem;
+    padding: 0.35rem 0.1rem;
+    min-block-size: 3.6rem;
+    font-size: 0.72rem;
+    line-height: 1.1;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .nav-icon {
+    inline-size: 1.6rem;
+    block-size: 1.6rem;
+  }
+
+  .app-shell {
+    padding-block-end: var(--tabbar-height);
+  }
+
+  .header-inner {
+    flex-wrap: nowrap;
+  }
+
+  .brand-subtitle {
+    display: none;
+  }
+
+  .header-actions .btn-label {
+    display: none;
+  }
+}
+
+/* ---------- Buttons: solid and gently "pressable" ---------- */
+.btn {
+  border-radius: 0.9rem;
+  font-weight: 800;
+}
+
+.btn--primary,
+.btn--primary:hover:not(:disabled) {
+  background: var(--fill-brand);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 0 var(--fill-brand-edge);
+  filter: none;
+}
+
+.btn--success {
+  background: var(--fill-green);
+  color: #0f2e1d;
+  box-shadow: 0 4px 0 var(--fill-green-edge);
+}
+
+.btn--danger {
+  background: var(--fill-red);
+  color: #fff;
+  box-shadow: 0 4px 0 var(--fill-red-edge);
+}
+
+.btn--secondary {
+  background-color: var(--bg-surface);
+  border: 2px solid var(--border);
+  box-shadow: 0 3px 0 var(--border);
+  color: var(--text-primary);
+}
+
+.btn--lg {
+  min-block-size: 3.4rem;
+  font-size: 1.1rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn:not(:disabled):hover {
+    transform: none;
+  }
+
+  .btn--primary:not(:disabled):active,
+  .btn--success:not(:disabled):active,
+  .btn--danger:not(:disabled):active,
+  .btn--secondary:not(:disabled):active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 var(--fill-brand-edge);
+  }
+
+  .btn--secondary:not(:disabled):active {
+    box-shadow: 0 1px 0 var(--border);
+  }
+}
+
+.pill-btn {
+  border-radius: 0.8rem;
+  font-weight: 800;
+}
+
+.pill-btn[aria-pressed='true'] {
+  background: var(--brand);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.icon-btn {
+  border-radius: 0.8rem;
+}
+
+/* ---------- Cards ---------- */
+.surface-card,
+.question-card,
+.stat-card,
+.bank-card,
+.mode-option-card,
+.review-card,
+.today-card,
+.path-unit {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  background-color: var(--bg-surface);
+}
+
+.bank-card {
+  border-block-start: 1px solid var(--border);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stat-card:hover,
+  .mode-option-card:hover,
+  .bank-card:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+.stat-icon {
+  background: var(--brand-soft);
+  color: var(--brand);
+  box-shadow: none;
+}
+
+.stat-card--red .stat-icon {
+  background: var(--crimson-soft);
+  color: var(--crimson);
+}
+
+.stat-card--gold .stat-icon {
+  background: var(--gold-soft);
+  color: var(--gold);
+}
+
+.stat-card--green .stat-icon {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.badge--number {
+  border-radius: 0.6rem;
+}
+
+.text-input,
+.select-input {
+  border-radius: 0.9rem;
+  border-width: 2px;
+  font-family: var(--font-sans);
+}
+
+.answer-panel {
+  background: var(--success-soft);
+  border-radius: var(--radius-md);
+}
+
+/* ---------- Dialogs ---------- */
+.dialog-header {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-block-end: 1px solid var(--border);
+}
+
+.dialog-header .icon-btn {
+  background: var(--bg-subtle);
+  border-color: transparent;
+  color: var(--text-primary);
+}
+
+/* ---------- Footer: quiet ---------- */
+.site-footer {
+  background: transparent;
+  color: var(--text-muted);
+  border-block-start: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+
+.footer-disclaimer {
+  color: var(--text-secondary);
+}
+
+.site-footer a {
+  color: var(--brand);
+}
+
+.update-banner {
+  background: var(--fill-brand);
+}
+
+/* ---------- Results ---------- */
+.result-banner--passed {
+  background: var(--success-soft);
+  box-shadow: inset 0 0 0 2px var(--fill-green);
+}
+
+.result-banner--failed {
+  background: var(--gold-soft);
+  box-shadow: inset 0 0 0 2px var(--fill-gold);
+}
+
+.hud-pill--pass {
+  background: var(--success-soft);
+}
+
+.hud-pill--miss {
+  background: var(--crimson-soft);
+}
+
+/* ---------- Mascot ---------- */
+.mascot {
+  flex: none;
+  display: block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mascot--flag,
+  .mascot--wave {
+    animation: mascot-hop 0.9s ease-out 1;
+  }
+}
+
+@keyframes mascot-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  35% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-4px);
+  }
+}
+
+/* ---------- Home ---------- */
+.home-hello {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-block: 0.5rem 1rem;
+}
+
+.home-bubble {
+  position: relative;
+  flex: 1;
+  margin: 0 0 1.5rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: 1.25rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+.home-bubble::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: -0.55rem;
+  inset-block-end: 1.1rem;
+  inline-size: 1rem;
+  block-size: 1rem;
+  background: inherit;
+  border-inline-start: 1px solid var(--border);
+  border-block-end: 1px solid var(--border);
+  transform: rotate(45deg);
+}
+
+.home-bubble strong {
+  font-weight: 900;
+}
+
+.home-cta {
+  inline-size: 100%;
+  min-block-size: 3.9rem;
+  font-size: 1.35rem;
+  font-weight: 900;
+  margin-block-end: 1rem;
+}
+
+.home-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-block-end: 1rem;
+}
+
+.home-tile {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  font-weight: 700;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.home-tile-value {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.home-tile-value svg {
+  color: #f26b3a;
+}
+
+.home-more {
+  margin-block-start: 1.5rem;
+}
+
+.home-section-title {
+  margin: 1.5rem 0 0.75rem;
+  font-size: 1.1rem;
+}
+
+.home-layout {
+  max-inline-size: 44rem;
+  margin-inline: auto;
+}
+
+/* ---------- Path unit banner ---------- */
+.path-unit-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: -1rem -1.1rem 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--fill-brand);
+  color: #fff;
+}
+
+.path-unit-banner .path-unit-eyebrow,
+.path-unit-banner .path-unit-meta {
+  color: rgb(255 255 255 / 0.88);
+}
+
+.path-unit.is-complete .path-unit-banner {
+  background: var(--fill-green);
+  color: #0f2e1d;
+}
+
+.path-unit.is-complete .path-unit-banner .path-unit-eyebrow,
+.path-unit.is-complete .path-unit-banner .path-unit-meta {
+  color: rgb(15 46 29 / 0.8);
+}
+
+.path-unit.is-locked .path-unit-banner {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.path-unit.is-locked .path-unit-banner .path-unit-eyebrow,
+.path-unit.is-locked .path-unit-banner .path-unit-meta {
+  color: var(--text-muted);
+}
+
+.path-unit-banner .path-skip {
+  color: inherit;
+  background: rgb(255 255 255 / 0.16);
+}
+
+.path-node-btn {
+  background: var(--fill-brand);
+  box-shadow: 0 6px 0 var(--fill-brand-edge);
+}
+
+.path-node--done .path-node-btn {
+  background: var(--fill-green);
+  box-shadow: 0 6px 0 var(--fill-green-edge);
+}
+
+.path-node--checkpoint.path-node--next .path-node-btn,
+.path-node--checkpoint.path-node--done .path-node-btn {
+  background: var(--fill-gold);
+  box-shadow: 0 6px 0 var(--fill-gold-edge);
+}
+
+.path-node--locked .path-node-btn {
+  background: var(--bg-subtle);
+  box-shadow: 0 6px 0 var(--border-strong);
+}
+
+.path-node--next .path-node-btn {
+  box-shadow: 0 6px 0 var(--fill-brand-edge), 0 0 0 8px var(--brand-soft);
+  animation: none;
+}
+
+.path-plan {
+  border-radius: var(--radius-lg);
+}
+
+.lesson-feedback {
+  inset-block-end: var(--tabbar-height);
+}
+
+.lesson-done .mascot {
+  margin-block-end: 0.25rem;
+}
+
+.choice-btn {
+  border-radius: 1rem;
+  background-color: var(--bg-surface);
+}
+
+/* The flashy hero is replaced on the home screen; keep it calm elsewhere. */
+.hero-banner {
+  background: var(--fill-brand);
+  box-shadow: var(--shadow-md);
+}
+
+.hero-banner::before,
+.hero-banner::after {
+  display: none;
+}
+
+.home-tile--action {
+  appearance: none;
+  text-align: start;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.home-tile--action:not(:disabled) {
+  border-color: color-mix(in srgb, var(--brand) 35%, var(--border));
+}
+
+.home-tile--action:not(:disabled) .home-tile-value {
+  color: var(--brand);
+}
+
+.home-tile--action:disabled {
+  cursor: default;
+}
+
+.home-share {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0 0;
+}
+
+.path-unit-banner h2 {
+  margin: 0.1rem 0;
+  font-size: 1.25rem;
+}
+
+.path-unit-banner p {
+  margin: 0;
+}
+
+.path-unit-trophy {
+  font-size: 2.4rem;
+}
+
+.path-unit .path-skip {
+  margin-block-end: 0.75rem;
+}
+
+.path-nodes {
+  padding-block: 0.4rem;
+}
+
+.path-node-btn {
+  inline-size: 4.2rem;
+  block-size: 4.2rem;
+}
+
+/* Headings that exist only for screen readers stay hidden when focused. */
+h1.visually-hidden:focus,
+h1.visually-hidden:focus-visible {
+  position: absolute !important;
+  inline-size: 1px !important;
+  block-size: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}
+
+.header-actions .lang-btn {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Keep focused or scrolled-to controls clear of the phone tab bar. */
+html {
+  scroll-padding-block-end: calc(var(--tabbar-height) + 1rem);
+}
+
+/* Readable text on coloured banners and soft backgrounds. */
+:root {
+  --success-light: #176b40;
+}
+
+.path-unit-banner .path-unit-eyebrow,
+.path-unit-banner .path-unit-meta {
+  color: #fff;
+}
+
+.path-unit.is-locked {
+  opacity: 1;
+}
+
+.path-unit.is-locked .path-node-label {
+  color: var(--text-muted);
+}
+
+.pill-btn[aria-pressed='true'] {
+  color: var(--brand-on);
+}
+
+.path-node--locked .path-node-btn {
+  color: var(--text-muted);
+}
+
+/* Header stays on one line: the two header buttons show icons only (they keep their labels for screen readers). */
+@media (max-width: 1400px) {
+  .header-actions .btn-label {
+    display: none;
+  }
+}
+
+@media (min-width: 901px) {
+  .header-inner {
+    flex-wrap: nowrap;
+  }
+
+  .nav-list {
+    flex-wrap: nowrap;
+  }
+
+  .nav-btn {
+    white-space: nowrap;
+    padding-inline: 0.75rem;
+  }
+}
