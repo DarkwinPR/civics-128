@@ -23,6 +23,7 @@ import {
   stopSpeaking,
 } from '../../services/speech';
 import { exportBackup, parseBackup } from '../../services/storage';
+import { bindReminderPicker, renderReminderPicker } from './reminderPicker';
 import { applyThemePreference, getStoredTheme, getSystemTheme } from '../../services/theme';
 import { announce } from '../announcer';
 import { t } from '../../i18n';
@@ -32,6 +33,8 @@ export interface SettingsDialogHandlers {
   getState: () => PersistedState;
   onUpdateSettings: (patch: Partial<StudySettings>) => void;
   onResetProgress: () => void;
+  /** Open the first-run welcome again. */
+  onShowWelcome: () => void;
   /** Replace all saved data with a backup the user picked. */
   onImportBackup: (state: PersistedState) => void;
 }
@@ -283,6 +286,12 @@ export function renderSettingsDialogBody(
     </form>
 
     <section class="settings-section" style="border-block-start:1px solid var(--border);padding-block-start:1rem;">
+      <h3>⏰ ${escapeHtml(t('reminder.title'))}</h3>
+      ${renderReminderPicker('settings')}
+      <button type="button" id="show-welcome-btn" class="btn btn--ghost" style="justify-self:start;">${escapeHtml(t('welcome.again'))}</button>
+    </section>
+
+    <section class="settings-section" style="border-block-start:1px solid var(--border);padding-block-start:1rem;">
       <h3>${escapeHtml(t('settings.studyData'))}</h3>
       <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.75rem;">
         <p class="field-hint" style="max-inline-size:34ch;">
@@ -515,6 +524,9 @@ export function renderSettingsDialogBody(
       }
       announce(t('settings.announceRestored'));
     });
+
+  bindReminderPicker(container);
+  container.querySelector('#show-welcome-btn')?.addEventListener('click', () => handlers.onShowWelcome());
 
   // Backup: download a file / restore from a file (stays on the device)
   const backupStatus = container.querySelector<HTMLElement>('#backup-status');
