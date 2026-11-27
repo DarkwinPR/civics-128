@@ -241,6 +241,21 @@ export function easiestAnswers(question: CivicsQuestion, officials: OfficialOver
   return sorted.slice(0, Math.max(1, question.requiredCount)).map((a) => a.text);
 }
 
+/**
+ * The other accepted answers, as written in the official list, so learners
+ * can see every option and keep the one they remember best.
+ */
+export function otherAcceptedAnswers(question: CivicsQuestion, officials: OfficialOverrides): string[] {
+  const easiest = new Set(easiestAnswers(question, officials).map((a) => a.toLowerCase()));
+  const seen = new Set<string>();
+  return getEffectiveAnswers(question, officials).filter((a) => {
+    const key = (cleanAnswer(a) || a).toLowerCase();
+    if (easiest.has(key) || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export function joinAnswers(parts: string[], lang: 'en' | 'es' = 'en'): string {
   if (parts.length <= 1) return parts[0] ?? '';
   const and = lang === 'es' ? ' y ' : ' and ';

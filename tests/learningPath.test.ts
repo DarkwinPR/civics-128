@@ -17,6 +17,7 @@ import {
   isLessonFinished,
   lessonProgress,
   lessonState,
+  otherAcceptedAnswers,
   seededRandom,
   stepsRemaining,
 } from '../src/domain/learningPath';
@@ -85,6 +86,18 @@ describe('easiest answer and choices', () => {
         });
       }
     }
+  });
+});
+
+describe('other accepted answers', () => {
+  it('lists every other official answer, without repeating the easiest one', () => {
+    const q3 = QUESTIONS_2025.find((q) => q.id === 3)!;
+    const easiest = easiestAnswers(q3, officials);
+    const others = otherAcceptedAnswers(q3, officials);
+    expect(others.length).toBe(q3.answers.length - easiest.length);
+    others.forEach((o) => expect(easiest).not.toContain(o));
+    const q7 = QUESTIONS_2025.find((q) => q.answers.length === 1)!;
+    expect(otherAcceptedAnswers(q7, officials)).toEqual([]);
   });
 });
 
