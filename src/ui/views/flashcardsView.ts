@@ -10,7 +10,7 @@ import { shuffleArray } from '../../domain/examEngine';
 import { easiestAnswers, joinAnswers } from '../../domain/learningPath';
 import type { CivicsCategory, CivicsQuestion, MasteryStatus, PersistedState } from '../../domain/types';
 import { getMostMissed, getQuestionProgress, isDueForReview } from '../../services/storage';
-import { renderReportLink, renderTranslationToggle } from '../translation';
+import { renderReportLink, renderTranslationToggle, renderWhy } from '../translation';
 import { t } from '../../i18n';
 import { isSpeechSynthesisSupported, speakText, stopSpeaking } from '../../services/speech';
 import { announce } from '../announcer';
@@ -487,6 +487,7 @@ export function mountFlashcardsView(
                   ${effectiveAnswers.map((ans) => `<li>${escapeHtml(ans)}</li>`).join('')}
                 </ul>
                 ${question.note ? `<p class="notice" style="margin:0;">${escapeHtml(question.note)}</p>` : ''}
+                ${renderWhy(question)}
                 ${
                   needsCustomState
                     ? `<div class="notice notice--gold" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.6rem;">

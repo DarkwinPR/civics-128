@@ -21,6 +21,7 @@ import { mountEnglishTestView } from './ui/views/englishTestView';
 import { mountAudioView } from './ui/views/audioView';
 import { renderMoreView } from './ui/views/moreView';
 import { mountPathView } from './ui/views/pathView';
+import { mountFullInterviewView } from './ui/views/fullInterviewView';
 import { closeDialogSmoothly, enhanceModalDialog } from './services/dialogHelper';
 import { isSpeechSynthesisSupported } from './services/speech';
 import {
@@ -139,7 +140,11 @@ if (isSpeechSynthesisSupported()) {
 
 function updateNavActive(): void {
   document.querySelectorAll<HTMLButtonElement>('.nav-btn[data-view]').forEach((btn) => {
-    const navView = ['flashcards', 'oral', 'bank', 'audio'].includes(currentView) ? 'more' : currentView;
+    const navView = ['flashcards', 'oral', 'bank', 'audio'].includes(currentView)
+      ? 'more'
+      : currentView === 'interview'
+        ? 'exam'
+        : currentView;
     if (btn.dataset.view === navView) {
       btn.setAttribute('aria-current', 'page');
       // On phones the tab row scrolls sideways; keep the active tab visible.
@@ -200,6 +205,20 @@ function mountActiveView(): void {
     return;
   }
 
+  if (currentView === 'interview') {
+    cleanupCurrentView = mountFullInterviewView(mainEl, {
+      getState: () => appState,
+      onRecordAttempt: (part, id, passed) => {
+        appState = recordEnglishAttempt(appState, part, id, passed);
+      },
+      onRecordCivics: (questionId, correct) => {
+        appState = recordPracticeResult(appState, questionId, correct);
+      },
+      onNavigate: navigateTo,
+    });
+    return;
+  }
+
   if (currentView === 'audio') {
     cleanupCurrentView = mountAudioView(mainEl, { getState: () => appState });
     return;
@@ -230,6 +249,7 @@ function mountActiveView(): void {
       onCompleteExam: (record) => {
         appState = addExamRecord(appState, record);
       },
+      onStartFullInterview: () => navigateTo('interview'),
       onPracticeReview: () => {
         flashcardsState = createInitialFlashcardsState(appState, 'review');
         navigateTo('flashcards');

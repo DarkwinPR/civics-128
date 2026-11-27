@@ -55,7 +55,7 @@ import {
 import { announce } from '../announcer';
 import { escapeHtml, ICONS } from '../dom';
 import { mascotSvg } from '../mascot';
-import { renderTranslationToggle } from '../translation';
+import { renderTranslationToggle, renderWhy } from '../translation';
 
 export interface PathCallbacks {
   getState: () => PersistedState;
@@ -400,6 +400,7 @@ export function mountPathView(container: HTMLElement, callbacks: PathCallbacks):
       ? `<div class="lesson-feedback ${feedback.correct ? 'is-right' : 'is-wrong'}" role="status">
           <p class="lesson-feedback-title">${escapeHtml(feedback.message)}</p>
           ${easiestLine(q)}
+          ${renderWhy(q)}
           ${otherAnswersBlock(q)}
           <button type="button" class="btn ${feedback.correct ? 'btn--success' : 'btn--primary'} btn--lg" data-path="continue" id="lesson-continue">${escapeHtml(t('path.continue'))}</button>
         </div>`
