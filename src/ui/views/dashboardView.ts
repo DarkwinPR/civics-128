@@ -18,6 +18,7 @@ import {
   stepsRemaining,
 } from '../../domain/learningPath';
 import { mascotSvg } from '../mascot';
+import { dismissInstall, installMode, promptInstall } from '../../services/install';
 import type { AppView, PersistedState } from '../../domain/types';
 import { READING_SENTENCES, WRITING_SENTENCES } from '../../domain/englishTest';
 import {
@@ -87,6 +88,7 @@ export function renderDashboardView(
     return { category: cat, done, total: items.length };
   });
 
+  const install = installMode();
   const allUnits = buildPath(CIVICS_QUESTIONS, version);
   const pathProgress = getPathProgress(state);
   const next = findNextStep(allUnits, pathProgress);
@@ -132,6 +134,22 @@ export function renderDashboardView(
                 : t(`path.plan.${plan.status}`, { days: plan.daysLeft, steps: plan.stepsLeft, perDay: plan.perDay }),
           )}</p></div>`
         : `<div class="path-plan path-plan--empty"><span aria-hidden="true">📅</span><p>${escapeHtml(t('path.planAsk'))}</p><button type="button" class="btn btn--secondary" id="dashboard-plan-settings">${escapeHtml(t('path.planSet'))}</button></div>`
+    }
+
+    ${
+      install !== 'none'
+        ? `<section class="install-card" aria-labelledby="install-heading">
+            <span class="install-icon" aria-hidden="true">📲</span>
+            <div>
+              <h2 id="install-heading">${escapeHtml(t('install.title'))}</h2>
+              <p>${escapeHtml(install === 'ios' ? t('install.iosSteps') : t('install.lead'))}</p>
+              <div class="install-actions">
+                ${install === 'prompt' ? `<button type="button" class="btn btn--primary" id="install-btn">${escapeHtml(t('install.button'))}</button>` : ''}
+                <button type="button" class="btn btn--ghost" id="install-later">${escapeHtml(t('install.later'))}</button>
+              </div>
+            </div>
+          </section>`
+        : ''
     }
 
     <div class="home-tiles">
@@ -305,6 +323,11 @@ export function renderDashboardView(
   container.querySelector('#dashboard-open-settings')?.addEventListener('click', () => {
     callbacks.onOpenSettings();
   });
+
+  container.querySelector('#install-btn')?.addEventListener('click', () => {
+    void promptInstall();
+  });
+  container.querySelector('#install-later')?.addEventListener('click', () => dismissInstall());
 
   container.querySelector('#dashboard-plan-settings')?.addEventListener('click', () => {
     callbacks.onOpenSettings();

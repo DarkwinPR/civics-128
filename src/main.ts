@@ -12,9 +12,11 @@ import './styles/friendly.css';
 
 import { REPO_URL, reportIssueUrl } from './config';
 import { setTestVersion } from './domain/questions';
-import type { AppView, PersistedState } from './domain/types';
+import type { AppView, PersistedState, StudySettings } from './domain/types';
 import { applyStaticTranslations, getLang, onLangChange, setLang, t } from './i18n';
 import { registerServiceWorker } from './services/pwa';
+import { initInstallPrompt, onInstallAvailabilityChange } from './services/install';
+import { openWelcome, shouldShowWelcome } from './ui/components/welcomeDialog';
 import { mountEnglishTestView } from './ui/views/englishTestView';
 import { mountAudioView } from './ui/views/audioView';
 import { renderMoreView } from './ui/views/moreView';
@@ -70,19 +72,32 @@ settingsDialog.querySelector('[data-close-dialog]')?.addEventListener('click', (
   void closeDialogSmoothly(settingsDialog);
 });
 
+function applySettingsPatch(patch: Partial<StudySettings>): void {
+  const versionChanged =
+    patch.testVersion !== undefined && patch.testVersion !== appState.settings.testVersion;
+  appState = updateSettings(appState, patch);
+  if (versionChanged) {
+    setTestVersion(appState.settings.testVersion);
+    flashcardsState = createInitialFlashcardsState(appState, 'all');
+  }
+  applyAppearance();
+  renderCurrentView(false);
+}
+
+function showWelcome(): void {
+  openWelcome({
+    getState: () => appState,
+    onUpdateSettings: applySettingsPatch,
+    onStartPath: () => navigateTo('path'),
+  });
+}
+
 function refreshSettingsModal(): void {
   renderSettingsDialogBody(settingsBody, settingsDialog, confirmDialog, {
     getState: () => appState,
-    onUpdateSettings: (patch) => {
-      const versionChanged =
-        patch.testVersion !== undefined && patch.testVersion !== appState.settings.testVersion;
-      appState = updateSettings(appState, patch);
-      if (versionChanged) {
-        setTestVersion(appState.settings.testVersion);
-        flashcardsState = createInitialFlashcardsState(appState, 'all');
-      }
-      applyAppearance();
-      renderCurrentView(false);
+    onUpdateSettings: applySettingsPatch,
+    onShowWelcome: () => {
+      void closeDialogSmoothly(settingsDialog).then(showWelcome);
     },
     onImportBackup: (state) => {
       appState = restoreBackup(state);
@@ -347,3 +362,12 @@ registerServiceWorker((applyUpdate) => {
 applyStaticTranslations();
 applyAppearance();
 renderCurrentView(false);
+
+// "Install the app" card on the home screen follows the browser's install prompt.
+initInstallPrompt();
+onInstallAvailabilityChange(() => {
+  if (currentView === 'dashboard') renderCurrentView(false);
+});
+
+// First visit: a short welcome to set the test, the state and the interview date.
+if (shouldShowWelcome(appState)) showWelcome();

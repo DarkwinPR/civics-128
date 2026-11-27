@@ -43,9 +43,13 @@ const playLesson = async (page: Page) => {
   throw new Error('lesson did not finish');
 };
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page }, testInfo) => {
   // The live Congress lookup is not needed for these tests.
   await page.route('https://unitedstates.github.io/**', (route) => route.abort());
+  // Skip the first-run welcome except in the test about it.
+  if (!testInfo.title.includes('welcome')) {
+    await page.addInitScript(() => localStorage.setItem('civics128:welcomeDone:v1', '1'));
+  }
 });
 
 test('dashboard loads and language switch is remembered', async ({ page }) => {
@@ -241,4 +245,37 @@ test('listen mode shows the current section', async ({ page }) => {
   await goTo(page, 'audio');
   await expect(page.locator('.audio-card .question-stem')).toBeVisible();
   await expect(page.locator('[data-audio="play"]')).toBeVisible();
+});
+
+test('first visit welcome: test version, state and date, then the path', async ({ page }) => {
+  const errors = errorsOf(page);
+  await page.goto('./');
+  const dialog = page.locator('dialog.welcome-dialog');
+  await expect(dialog).toBeVisible();
+  await page.locator('input[name="w-version"][value="2008"]').check();
+  await page.locator('[data-w="next"]').click();
+  await page.locator('#w-state').selectOption('TX');
+  await page.locator('[data-w="next"]').click();
+  const date = new Date(Date.now() + 40 * 86_400_000).toISOString().slice(0, 10);
+  await page.locator('#w-date').fill(date);
+  await page.locator('#w-date').dispatchEvent('change');
+  await page.locator('[data-w="next"]').click();
+  await expect(page.locator('[data-reminder="google"]')).toBeVisible();
+  await page.locator('[data-w="start"]').click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.locator('.path-unit').first()).toBeVisible();
+  const settings = await page.evaluate(() => JSON.parse(localStorage.getItem('civics128:state:v1') ?? '{}').settings);
+  expect(settings).toMatchObject({ testVersion: '2008', homeState: 'TX', interviewDate: date });
+  expect(settings.officials.stateCapital).toBe('Austin');
+  // It does not come back on the next visit.
+  await page.reload();
+  await expect(page.locator('dialog.welcome-dialog')).toHaveCount(0);
+  expect(errors.filter((e) => !e.includes('Failed to load resource'))).toEqual([]);
+});
+
+test('welcome can be skipped', async ({ page }) => {
+  await page.goto('./');
+  await page.locator('[data-w="skip"]').click();
+  await expect(page.locator('dialog.welcome-dialog')).toHaveCount(0);
+  await expect(page.locator('.home-cta')).toBeVisible();
 });
