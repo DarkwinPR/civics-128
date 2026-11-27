@@ -981,3 +981,36 @@ dialog.welcome-dialog {
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+/* Other accepted answers shown after checking an answer in the path */
+.other-answers {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.other-answers-label {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.other-answers-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  max-block-size: 9.5rem;
+  overflow-y: auto;
+}
+
+.other-answers-list li {
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.6rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  font-size: 0.88rem;
+  font-weight: 600;
+}

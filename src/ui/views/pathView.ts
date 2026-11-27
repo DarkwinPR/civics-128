@@ -19,6 +19,7 @@ import {
   joinAnswers,
   lessonProgress,
   lessonState,
+  otherAcceptedAnswers,
   pickCheckpoint,
   sectionTitle,
   seededRandom,
@@ -317,6 +318,15 @@ export function mountPathView(container: HTMLElement, callbacks: PathCallbacks):
     `<p class="easiest-answer"><span class="easiest-label">💡 ${escapeHtml(t('path.easiest'))}</span> <span lang="en">${escapeHtml(joinAnswers(easiestAnswers(q, officials())))}</span>
       ${canSpeak ? `<button type="button" class="icon-btn" data-say="${escapeHtml(joinAnswers(easiestAnswers(q, officials())))}" aria-label="${escapeHtml(t('path.hearAnswer'))}">${ICONS.volume}</button>` : ''}</p>`;
 
+  const otherAnswersBlock = (q: CivicsQuestion) => {
+    const others = otherAcceptedAnswers(q, officials());
+    if (!others.length) return '';
+    return `<div class="other-answers">
+        <p class="other-answers-label">${escapeHtml(q.requiredCount > 1 ? t('path.alsoAcceptedMany', { n: q.requiredCount }) : t('path.alsoAccepted'))}</p>
+        <ul class="other-answers-list" role="list">${others.map((a) => `<li lang="en">${escapeHtml(a)}</li>`).join('')}</ul>
+      </div>`;
+  };
+
   const progressHeader = (pct: number, label: string) => `
     <div class="lesson-top">
       <button type="button" class="icon-btn" data-path="quit" aria-label="${escapeHtml(t('path.quit'))}">✕</button>
@@ -390,6 +400,7 @@ export function mountPathView(container: HTMLElement, callbacks: PathCallbacks):
       ? `<div class="lesson-feedback ${feedback.correct ? 'is-right' : 'is-wrong'}" role="status">
           <p class="lesson-feedback-title">${escapeHtml(feedback.message)}</p>
           ${easiestLine(q)}
+          ${otherAnswersBlock(q)}
           <button type="button" class="btn ${feedback.correct ? 'btn--success' : 'btn--primary'} btn--lg" data-path="continue" id="lesson-continue">${escapeHtml(t('path.continue'))}</button>
         </div>`
       : '';
