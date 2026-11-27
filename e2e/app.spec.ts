@@ -279,3 +279,44 @@ test('welcome can be skipped', async ({ page }) => {
   await expect(page.locator('dialog.welcome-dialog')).toHaveCount(0);
   await expect(page.locator('.home-cta')).toBeVisible();
 });
+
+test('full interview: N-400, civics with official rules, reading, writing, results', async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.addInitScript(() => {
+    const w = window as unknown as Record<string, unknown>;
+    delete w.SpeechRecognition;
+    delete w.webkitSpeechRecognition;
+  });
+  await page.goto('./');
+  await goTo(page, 'exam');
+  await page.locator('#start-full-interview-btn').click();
+  await expect(page.locator('#main-heading')).toBeVisible();
+  await page.locator('[data-mock="start"]').click();
+  for (let i = 0; i < 5; i++) await page.locator('[data-mock="n400-next"]').click();
+  // Civics: missing every answer ends the civics part at the fail threshold.
+  for (let i = 0; i < 25; i++) {
+    if (!(await page.locator('[data-mock="civics-dont-know"]').isVisible())) break;
+    await page.locator('[data-mock="civics-dont-know"]').click();
+    await expect(page.locator('.easiest-answer')).toBeVisible();
+    await page.locator('[data-mock="civics-next"]').click();
+  }
+  await page.locator('[data-mock="self-read-ok"]').click();
+  await page.locator('[data-mock="reading-next"]').click();
+  for (let i = 0; i < 3; i++) {
+    await page.locator('#mock-writing-input').fill('wrong');
+    await page.locator('[data-form="mock-writing"] button[type=submit]').click();
+    await page.locator('[data-mock="writing-next"]').click();
+  }
+  await expect(page.locator('.mock-results .mock-result')).toHaveCount(4);
+  await expect(page.locator('.mock-result.is-retry')).toHaveCount(2); // civics and writing
+  const progress = await page.evaluate(() => JSON.parse(localStorage.getItem('civics128:state:v1') ?? '{}').progress);
+  expect(Object.keys(progress).length).toBeGreaterThanOrEqual(9);
+});
+
+test('path feedback shows the Spanish "why" explanation', async ({ page }) => {
+  await page.goto('./');
+  await goTo(page, 'path');
+  await page.locator('[data-path="lesson"][data-unit="0"][data-lesson="0"]').click();
+  await page.locator('.choice-btn').first().click();
+  await expect(page.locator('.lesson-feedback .why-box')).toBeVisible();
+});

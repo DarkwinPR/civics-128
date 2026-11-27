@@ -29,6 +29,8 @@ import { renderTranslationToggle } from '../translation';
 import { launchConfetti } from '../confetti';
 
 export interface MockExamCallbacks {
+  /** Open the full interview simulation (N-400, civics, reading, writing). */
+  onStartFullInterview?: () => void;
   getState: () => PersistedState;
   onRecordQuestionResult: (questionId: number, correct: boolean) => void;
   onCompleteExam: (record: ExamRecord) => void;
@@ -229,6 +231,19 @@ export function mountMockExamView(
             </div>
           </div>
 
+          ${
+            callbacks.onStartFullInterview
+              ? `<article class="full-interview-card">
+                  <span class="full-interview-icon" aria-hidden="true">🧑‍💼</span>
+                  <div>
+                    <h2>${escapeHtml(t('mock.fullCardTitle'))}</h2>
+                    <p>${escapeHtml(t('mock.fullCardBody'))}</p>
+                    <button type="button" id="start-full-interview-btn" class="btn btn--primary">${escapeHtml(t('mock.fullCardButton'))}</button>
+                  </div>
+                </article>`
+              : ''
+          }
+
           <div class="exam-mode-grid">
             <article class="mode-option-card">
               <div class="badge-row">
@@ -269,6 +284,9 @@ export function mountMockExamView(
         </div>
       `;
 
+      container
+        .querySelector('#start-full-interview-btn')
+        ?.addEventListener('click', () => callbacks.onStartFullInterview?.());
       container
         .querySelector('#start-standard-btn')
         ?.addEventListener('click', () => startNewExam('standard'));

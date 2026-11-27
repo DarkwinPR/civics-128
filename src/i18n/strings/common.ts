@@ -15,6 +15,7 @@ const strings: StringModule = {
     'nav.path': 'My Path',
     'nav.more': 'More',
     'nav.examTab': 'Exam',
+    'why.label': 'Why? (in Spanish)',
     'nav.englishTab': 'English',
     'nav.audio': 'Listen mode',
     'nav.skip': 'Skip to main content',
@@ -31,6 +32,7 @@ const strings: StringModule = {
     'title.path': 'My Learning Path',
     'title.audio': 'Listen Mode',
     'title.more': 'More study tools',
+    'title.interview': 'Full interview practice',
     'title.suffix': 'U.S. Citizenship Test Practice',
     'footer.disclaimer':
       'Free, independent study tool. Not affiliated with or endorsed by USCIS or the U.S. government, and not legal advice.',
@@ -94,6 +96,7 @@ const strings: StringModule = {
     'nav.path': 'Mi ruta',
     'nav.more': 'Más',
     'nav.examTab': 'Examen',
+    'why.label': '¿Por qué?',
     'nav.englishTab': 'Inglés',
     'nav.audio': 'Modo audio',
     'nav.skip': 'Saltar al contenido principal',
@@ -110,6 +113,7 @@ const strings: StringModule = {
     'title.path': 'Mi ruta de estudio',
     'title.audio': 'Modo audio',
     'title.more': 'Más herramientas de estudio',
+    'title.interview': 'Simulacro de entrevista completa',
     'title.suffix': 'Práctica para el examen de ciudadanía',
     'footer.disclaimer':
       'Herramienta de estudio gratuita e independiente. No está afiliada ni respaldada por USCIS ni por el gobierno de EE. UU., y no es asesoría legal.',

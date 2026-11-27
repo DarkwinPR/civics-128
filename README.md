@@ -24,6 +24,10 @@ celular, se puede instalar como app y funciona sin internet. Interfaz en **espa�
   (review + next lesson + one English sentence) and a study plan from your interview date.
 - **Friendly start / Bienvenida:** a 3-step welcome on the first visit (test version, your state,
   interview date), a daily reminder you add to your own calendar, and an "install the app" card.
+- **"¿Por qué?"**: a short Spanish explanation for each of the 128 questions (review list in
+  `docs/por-que-2025.md`).
+- **Full interview practice**: oath and N-400 questions, the civics test with the official rules,
+  then reading and writing, in the real order.
 - **Easiest answer** highlighted for every question, and a hands-free **listen mode**.
 - **Both civics tests / Ambas versiones:** 2025 test (128 questions, N-400 filed on or after
   Oct 20, 2025) and 2008 test (100 questions, filed before that date), including the 65/20 subsets.

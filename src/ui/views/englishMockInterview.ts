@@ -1,5 +1,15 @@
 import { checkReading, compareWriting, type WordMark } from '../../domain/englishCheck';
-import { shuffleArray } from '../../domain/examEngine';
+import { evaluateAnswer } from '../../domain/answerMatcher';
+import {
+  createExamSession,
+  getExamRules,
+  getExamTallies,
+  shuffleArray,
+  submitExamAnswer,
+  type ExamSessionState,
+} from '../../domain/examEngine';
+import { easiestAnswers, joinAnswers } from '../../domain/learningPath';
+import { CIVICS_QUESTIONS, isDynamicUnconfigured } from '../../domain/questions';
 import {
   N400_INTERVIEW,
   READING_SENTENCES,
@@ -31,9 +41,12 @@ export interface MockInterviewCallbacks {
   getState: () => PersistedState;
   onRecordAttempt: (part: EnglishPart, id: string, passed: boolean) => void;
   onNavigate?: (view: AppView) => void;
+  /** Full interview: civics questions between the N-400 part and the English test. */
+  includeCivics?: boolean;
+  onRecordCivics?: (questionId: number, correct: boolean) => void;
 }
 
-type Stage = 'intro' | 'n400' | 'reading' | 'writing' | 'done';
+type Stage = 'intro' | 'n400' | 'civics' | 'reading' | 'writing' | 'done';
 
 const MAX_TRIES = 3;
 const READING_PASS = 0.8;
@@ -69,6 +82,9 @@ export function mountEnglishMockInterview(
   let writingPassed: boolean | null = null;
   let readingTries = 0;
   let writingTries = 0;
+  const full = Boolean(callbacks.includeCivics);
+  let exam: ExamSessionState | null = null;
+  let civicsFeedback: { correct: boolean; answer: string } | null = null;
 
   // Per-step feedback
   let heard = '';
@@ -100,14 +116,23 @@ export function mountEnglishMockInterview(
     stepPassed = null;
     typed = '';
     writingMarks = null;
+    civicsFeedback = null;
     micError = '';
     stopMic();
     stopSpeaking();
   };
 
-  const stepsTotal = run.n400.length + 2;
+  const civicsSteps = full ? 1 : 0;
+  const stepsTotal = run.n400.length + civicsSteps + 2;
   const stepNumber = () =>
-    stage === 'n400' ? idx + 1 : stage === 'reading' ? run.n400.length + 1 : run.n400.length + 2;
+    stage === 'n400'
+      ? idx + 1
+      : stage === 'civics'
+        ? run.n400.length + 1
+        : stage === 'reading'
+          ? run.n400.length + civicsSteps + 1
+          : run.n400.length + civicsSteps + 2;
+  const civicsPassed = () => (exam ? exam.status === 'passed' : null);
 
   const progressBar = () =>
     stage === 'intro' || stage === 'done'
@@ -132,14 +157,15 @@ export function mountEnglishMockInterview(
   const renderIntro = () => `
     <div class="mock-intro">
       <p class="mock-officer" aria-hidden="true">🧑‍💼</p>
-      <h2>${escapeHtml(t('mock.introTitle'))}</h2>
-      <p>${escapeHtml(t('mock.introBody'))}</p>
+      <h2>${escapeHtml(full ? t('mock.fullTitle') : t('mock.introTitle'))}</h2>
+      <p>${escapeHtml(full ? t('mock.fullBody') : t('mock.introBody'))}</p>
       <ul class="mock-steps">
         <li>🗣️ ${escapeHtml(t('mock.introN400', { n: run.n400.length }))}</li>
+        ${full ? `<li>🇺🇸 ${escapeHtml(t('mock.introCivicsStep', { max: civicsRules().maxQuestions, pass: civicsRules().passThreshold }))}</li>` : ''}
         <li>📖 ${escapeHtml(t('mock.introReading'))}</li>
         <li>✍️ ${escapeHtml(t('mock.introWriting'))}</li>
       </ul>
-      <p class="field-hint">${escapeHtml(t('mock.introCivics'))}</p>
+      ${full ? `<p class="field-hint">${escapeHtml(t('mock.fullHint'))}</p>` : `<p class="field-hint">${escapeHtml(t('mock.introCivics'))}</p>`}
       <button type="button" class="btn btn--primary btn--lg" data-mock="start">${ICONS.play} ${escapeHtml(t('mock.start'))}</button>
     </div>`;
 
@@ -164,6 +190,56 @@ export function mountEnglishMockInterview(
         <span></span>
         <button type="button" class="btn btn--primary" data-mock="n400-next">${escapeHtml(heard ? t('english.next') : t('mock.answeredOutLoud'))} ${ICONS.arrowRight}</button>
       </div>`;
+  };
+
+  function civicsRules() {
+    return getExamRules('standard');
+  }
+
+  const renderCivics = () => {
+    if (!exam) return '';
+    const q = exam.queue[exam.currentIndex];
+    if (!q) return '';
+    const tally = getExamTallies(exam);
+    const officials = callbacks.getState().settings.officials;
+    return `
+      <p class="mock-officer-line"><span aria-hidden="true">🧑‍💼</span> ${escapeHtml(t('mock.civicsAsk', { n: tally.answered + 1 }))}</p>
+      <p class="field-hint">${escapeHtml(t('mock.civicsTally', { correct: tally.correct, pass: exam.rules.passThreshold, wrong: tally.incorrect }))}</p>
+      <h2 class="question-stem" lang="en">${escapeHtml(q.question)}</h2>
+      ${
+        civicsFeedback
+          ? `<div class="english-feedback ${civicsFeedback.correct ? 'is-pass' : 'is-retry'}">
+              <p class="english-feedback-title">${escapeHtml(civicsFeedback.correct ? `🎉 ${t('mock.civicsRight')}` : `💪 ${t('mock.civicsWrong')}`)}</p>
+              ${civicsFeedback.answer ? `<p class="field-hint" style="margin:0;">${escapeHtml(t('mock.youSaid'))} <span lang="en">“${escapeHtml(civicsFeedback.answer)}”</span></p>` : ''}
+              <p class="easiest-answer"><span class="easiest-label">💡 ${escapeHtml(t('path.easiest'))}</span> <span lang="en">${escapeHtml(joinAnswers(easiestAnswers(q, officials)))}</span></p>
+            </div>
+            <div class="card-actions"><span></span>
+              <button type="button" class="btn btn--primary" data-mock="civics-next">${escapeHtml(t('english.next'))} ${ICONS.arrowRight}</button>
+            </div>`
+          : `<div class="card-action-group">
+              ${canSpeak ? `<button type="button" class="btn btn--secondary" data-mock="hear-civics">${ICONS.volume} ${escapeHtml(t('english.hearOfficer'))}</button>` : ''}
+              ${micButton('civics-mic', t('english.answerAloud'))}
+            </div>
+            <form class="typed-answer-form" data-form="mock-civics" autocomplete="off">
+              <label class="visually-hidden" for="mock-civics-input">${escapeHtml(t('path.typeAnswer'))}</label>
+              <input id="mock-civics-input" class="text-input" type="text" lang="en" spellcheck="false" placeholder="${escapeHtml(t('path.typeAnswer'))}" value="${escapeHtml(heard)}" />
+              <button type="submit" class="btn btn--primary">${ICONS.check} ${escapeHtml(t('path.check'))}</button>
+            </form>
+            <button type="button" class="btn btn--ghost" data-mock="civics-dont-know" style="justify-self:start;">${escapeHtml(t('path.dontKnow'))}</button>
+            ${micError ? `<p class="notice notice--error" style="margin:0;">${escapeHtml(micError)}</p>` : ''}`
+      }`;
+  };
+
+  const answerCivics = (text: string) => {
+    if (!exam || civicsFeedback) return;
+    const q = exam.queue[exam.currentIndex];
+    if (!q) return;
+    const answer = text.trim();
+    const correct = answer ? evaluateAnswer(q, answer, callbacks.getState().settings.officials).isMatch : false;
+    civicsFeedback = { correct, answer };
+    callbacks.onRecordCivics?.(q.id, correct);
+    announce(correct ? t('mock.civicsRight') : t('mock.civicsWrong'));
+    render();
   };
 
   const renderReading = () => {
@@ -240,20 +316,31 @@ export function mountEnglishMockInterview(
     </li>`;
 
   const renderDone = () => {
-    const allGood = Boolean(readingPassed && writingPassed);
+    const allGood = Boolean(readingPassed && writingPassed && (!full || civicsPassed()));
+    const tally = exam ? getExamTallies(exam) : null;
     return `
       <div class="mock-intro">
         ${mascotSvg(allGood ? 'flag' : 'stand', 110)}
-        <h2>${escapeHtml(allGood ? t('mock.doneGreat') : t('mock.doneKeepGoing'))}</h2>
+        <h2>${escapeHtml(allGood ? (full ? t('mock.fullPass') : t('mock.doneGreat')) : t('mock.doneKeepGoing'))}</h2>
         <ul class="mock-results">
           ${resultRow(t('mock.resultN400'), true, t('mock.resultN400Detail', { n: n400Answered, total: run.n400.length }))}
+          ${
+            full && tally
+              ? resultRow(
+                  t('mock.resultCivics'),
+                  civicsPassed(),
+                  t(civicsPassed() ? 'mock.resultCivicsPass' : 'mock.resultCivicsFail', { correct: tally.correct, asked: tally.answered }),
+                )
+              : ''
+          }
           ${resultRow(t('english.tabReading'), readingPassed, readingPassed ? t('mock.resultPassTries', { n: readingTries + 1 }) : t('mock.resultPracticeMore'))}
           ${resultRow(t('english.tabWriting'), writingPassed, writingPassed ? t('mock.resultPassTries', { n: writingTries + 1 }) : t('mock.resultPracticeMore'))}
         </ul>
         <p>${escapeHtml(allGood ? t('mock.doneGreatBody') : t('mock.doneKeepGoingBody'))}</p>
         <div class="card-action-group" style="justify-content:center;">
           <button type="button" class="btn btn--primary" data-mock="again">${ICONS.rotate} ${escapeHtml(t('mock.again'))}</button>
-          ${callbacks.onNavigate ? `<button type="button" class="btn btn--secondary" data-mock="civics">${escapeHtml(t('mock.toCivics'))}</button>` : ''}
+          ${callbacks.onNavigate && !full ? `<button type="button" class="btn btn--secondary" data-mock="civics">${escapeHtml(t('mock.toCivics'))}</button>` : ''}
+          ${callbacks.onNavigate && full ? `<button type="button" class="btn btn--secondary" data-mock="to-path">${escapeHtml(t('path.nextLesson'))}</button>` : ''}
         </div>
       </div>`;
   };
@@ -264,7 +351,9 @@ export function mountEnglishMockInterview(
         ? renderIntro()
         : stage === 'n400'
           ? renderN400()
-          : stage === 'reading'
+          : stage === 'civics'
+            ? renderCivics()
+            : stage === 'reading'
             ? renderReading()
             : stage === 'writing'
               ? renderWriting()
@@ -287,11 +376,14 @@ export function mountEnglishMockInterview(
     if (next === 'n400') {
       const q = run.n400[0];
       if (q && canSpeak) say(q.question);
+    } else if (next === 'civics') {
+      const q = exam?.queue[0];
+      if (q && canSpeak) window.setTimeout(() => say(q.question), 300);
     } else if (next === 'writing') {
       const w = run.writing[0];
       if (w && canSpeak) window.setTimeout(() => say(w.text), 300);
     } else if (next === 'done') {
-      announce(readingPassed && writingPassed ? t('mock.doneGreat') : t('mock.doneKeepGoing'));
+      announce(readingPassed && writingPassed && (!full || civicsPassed()) ? t('mock.doneGreat') : t('mock.doneKeepGoing'));
     }
   };
 
@@ -353,7 +445,45 @@ export function mountEnglishMockInterview(
         writingPassed = null;
         readingTries = 0;
         writingTries = 0;
+        exam = full
+          ? createExamSession(
+              CIVICS_QUESTIONS.filter((q) => !isDynamicUnconfigured(q, callbacks.getState().settings.officials)),
+              'standard',
+            )
+          : null;
         goStage('n400');
+        break;
+      case 'hear-civics': {
+        const q = exam?.queue[exam.currentIndex];
+        if (q) say(q.question);
+        break;
+      }
+      case 'civics-mic':
+        listen((text) => {
+          heard = text;
+          if (text) answerCivics(text);
+          else micError = t('english.answerNotHeard');
+        });
+        break;
+      case 'civics-dont-know':
+        answerCivics('');
+        break;
+      case 'civics-next': {
+        if (!exam || !civicsFeedback) return;
+        exam = submitExamAnswer(exam, civicsFeedback.correct, civicsFeedback.answer);
+        resetStep();
+        if (exam.status !== 'in-progress') {
+          goStage('reading');
+        } else {
+          render();
+          focusCard();
+          const q = exam.queue[exam.currentIndex];
+          if (q && canSpeak) say(q.question);
+        }
+        break;
+      }
+      case 'to-path':
+        callbacks.onNavigate?.('path');
         break;
       case 'hear-question': {
         const q = run.n400[idx];
@@ -373,7 +503,7 @@ export function mountEnglishMockInterview(
         idx += 1;
         resetStep();
         if (idx >= run.n400.length) {
-          goStage('reading');
+          goStage(full ? 'civics' : 'reading');
         } else {
           render();
           focusCard();
@@ -450,6 +580,12 @@ export function mountEnglishMockInterview(
 
   const onSubmit = (event: Event) => {
     const form = event.target as HTMLFormElement;
+    if (form.dataset.form === 'mock-civics') {
+      event.preventDefault();
+      const input = form.querySelector<HTMLInputElement>('#mock-civics-input');
+      if (input?.value.trim()) answerCivics(input.value);
+      return;
+    }
     if (form.dataset.form !== 'mock-writing') return;
     event.preventDefault();
     const item = run.writing[writingTries];

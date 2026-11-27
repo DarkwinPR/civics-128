@@ -131,6 +131,7 @@ export type AppView =
   | 'english'
   | 'bank'
   | 'audio'
+  | 'interview'
   | 'more';
 
 export interface AnswerMatchResult {

@@ -3,6 +3,7 @@ import { QUESTIONS_2008_ES } from '../domain/questions2008';
 import type { CivicsQuestion } from '../domain/types';
 import { t } from '../i18n';
 import { QUESTIONS_2025_ES } from '../i18n/questionsEs';
+import { WHY_2025_ES } from '../i18n/whyEs';
 import { reportIssueUrl } from '../config';
 import { escapeHtml } from './dom';
 
@@ -58,4 +59,16 @@ export function renderReportLink(question: CivicsQuestion, version: string): str
   const title = `Q${displayNumber(question)} (${version} test): `;
   const body = `Question ${displayNumber(question)} — ${question.question}`;
   return `<a class="report-link" href="${escapeHtml(reportIssueUrl(title, body))}" target="_blank" rel="noopener noreferrer">${escapeHtml(t('report.title'))}</a>`;
+}
+
+/** Short Spanish "why" explanation (2025 questions only, for now). */
+export function getWhyEs(question: CivicsQuestion): string | undefined {
+  return question.id <= 1000 ? WHY_2025_ES[question.id] : undefined;
+}
+
+/** "¿Por qué?" box shown after answering. Always in Spanish (lang="es"). */
+export function renderWhy(question: CivicsQuestion): string {
+  const why = getWhyEs(question);
+  if (!why) return '';
+  return `<div class="why-box" lang="es"><p class="why-label">🦅 ${escapeHtml(t('why.label'))}</p><p class="why-text">${escapeHtml(why)}</p></div>`;
 }
